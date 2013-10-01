@@ -4,6 +4,7 @@ public class MemberListEntry {
 	private String MachineID;
 	private Long Heartbeat;
 	private Long localTimeStamp;
+	private boolean markForDeletion;
 	
 	MemberListEntry(String MachineID)
 	{
