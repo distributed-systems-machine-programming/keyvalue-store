@@ -101,7 +101,12 @@ public class runner {
 		    }
 		final Logger LOGGER = Logger.getLogger(runner.class.getName());
 		
-
+		MemberList memberList = new MemberList(fullMachineID);
+		
+		int HeartBeatRate = 450;   //in miliseconds
+		Heart dil = new Heart(HeartBeatRate, memberList, fullMachineID);
+		
+		
 		
 		while(true)
 		{

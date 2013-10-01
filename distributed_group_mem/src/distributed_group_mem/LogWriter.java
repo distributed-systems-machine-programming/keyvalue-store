@@ -12,8 +12,8 @@ public class LogWriter {
 
     // Get the global logger to configure it
     Logger logger = Logger.getLogger("");
-
-    logger.setLevel(Level.INFO);
+    
+    logger.setLevel(Level.FINE);
     String logFile = MachineName+".log";
     fileTxt = new FileHandler(logFile);
     
