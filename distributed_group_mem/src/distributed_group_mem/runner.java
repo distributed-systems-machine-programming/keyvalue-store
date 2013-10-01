@@ -5,6 +5,15 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.logging.*;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import java.io.File;
+
 public class runner {
 
 	/**
@@ -12,8 +21,142 @@ public class runner {
 	 * @throws Exception 
 	 * @throws Exception 
 	 */
+	
+	//all rates are in milli-seconds
+	static int HeartRate;
+	static int FailureCheckRate;
+	static int FailureCleanUpRate;
+	static int FailureTimeOut;
+	static int GossipSendingRate;
+	
+	public static void main(String[] args) throws Exception {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String input;
+		
+		//INITIALIZE THE PARAMETERS
+		initParams();
+		
+		
+		//ASSIGN MACHINE IDs
+		String fullMachineID = getFullMachineID();
+		String shortMachineID = getShortMachineID();
+		
+		//LOGGER SETUP 
+		try {
+		      LogWriter.setup(shortMachineID);
+		    } catch (IOException e) {
+		      e.printStackTrace();
+		      throw new RuntimeException("Problems with creating the log files");
+		    }
+		final Logger LOGGER = Logger.getLogger(runner.class.getName());
+		
+		//CREATE MEMBERSHIP LIST
+		MemberList memberList = new MemberList(fullMachineID);
+		
+		//INITIALIZE HEART
+		
+		Heart dil = new Heart(HeartRate, memberList, fullMachineID);
+		
+		//INITIALIZE FAILURE DETECTOR
+		
+		//FailureDetector fd = new FailureDetector();
+		
+		
+		
+		
+		while(true)
+		{
+			System.out.println("Enter the command.");
+			System.out.println(">");
+			LOGGER.info(fullMachineID+" # "+"Getting input");
+			input = br.readLine();
+		}
+		
+		
+		
+		
+		
+		
+	}
+	
+	private static void initParams()
+	{
+		 try {
+			 
+				File fXmlFile = new File("parameters.xml");
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(fXmlFile);
+			 
+				doc.getDocumentElement().normalize();
+			 
+				System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+			 
+				NodeList nList = doc.getElementsByTagName("key");
+			 
+			
+			 
+				for (int temp = 0; temp < nList.getLength(); temp++) {
+			 
+					Node nNode = nList.item(temp);
+			 			 
+					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+			 
+						Element eElement = (Element) nNode;
+			 
+						
+						setParamValue(eElement.getAttribute("id"),eElement.getElementsByTagName("value").item(0).getTextContent());
+									 
+					}
+				}
+			    } catch (Exception e) {
+				e.printStackTrace();
+			    }
+	}
+	
+	
+	private static void setParamValue(String key, String value) {
+		System.out.println("key : " + key);
+		System.out.println("value : " + value);
+		//key += '\0';
+		try{
+		if(key.matches("HeartRate"))
+			HeartRate = Integer.parseInt(value);
+		}catch (NullPointerException e)
+		{
+			//do nothing
+		}
+		try{
+		if(key.matches("FailureCheckRate"))
+			FailureCheckRate = Integer.parseInt(value);
+		}catch (NullPointerException e)
+		{
+			//do nothing
+		}
+		try{
+		if(key.matches("FailureCleanUpRate"))
+			FailureCleanUpRate = Integer.parseInt(value);
+		}catch (NullPointerException e)
+		{
+			//do nothing
+		}
+		try{
+		if(key.matches("FailureTimeOut"))
+			FailureTimeOut = Integer.parseInt(value);
+		}catch (NullPointerException e)
+		{
+			//do nothing
+		}
+		try{
+		if(key.matches("GossipSendingRate"))
+			GossipSendingRate = Integer.parseInt(value);
+		}catch (NullPointerException e)
+		{
+			//do nothing
+		}	
+	}
 
-	public static String getFullMachineID() throws Exception
+	private static String getFullMachineID() throws Exception
 	{
 		String MachineID = null;
 		String localIP=null;
@@ -48,7 +191,7 @@ public class runner {
 		
 		return MachineID;
 	}
-	public static String getShortMachineID() throws Exception
+	private static String getShortMachineID() throws Exception
 	{
 		String MachineID = null;
 		String localIP=null;
@@ -84,43 +227,5 @@ public class runner {
 	
 	
 	
-	public static void main(String[] args) throws Exception {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		String input;
-		
-		//get Machine IDs
-		String fullMachineID = getFullMachineID();
-		String shortMachineID = getShortMachineID();
-		
-		//setup and initialize logger
-		try {
-		      LogWriter.setup(shortMachineID);
-		    } catch (IOException e) {
-		      e.printStackTrace();
-		      throw new RuntimeException("Problems with creating the log files");
-		    }
-		final Logger LOGGER = Logger.getLogger(runner.class.getName());
-		
-		MemberList memberList = new MemberList(fullMachineID);
-		
-		int HeartBeatRate = 450;   //in miliseconds
-		Heart dil = new Heart(HeartBeatRate, memberList, fullMachineID);
-		
-		
-		
-		while(true)
-		{
-			System.out.println("Enter the command.");
-			System.out.println(">");
-			LOGGER.info(fullMachineID+" # "+"Getting input");
-			input = br.readLine();
-		}
-		
-		
-		
-		
-		
-		
-	}
-
+	
 }
