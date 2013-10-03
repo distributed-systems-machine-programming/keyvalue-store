@@ -62,8 +62,15 @@ public class runner {
 		//FailureDetector fd = new FailureDetector();
 		
 		//INITIALIZE GOSSIP LISTENER
-		int port= 9898;
-		Gossiper gos_obj = new Gossiper(port, GossipSendingRate);
+		int listenerPort;
+		if (args.length < 2)
+			 listenerPort= 9898;
+		else
+		{
+			 listenerPort = Integer.parseInt(args[1]);
+		}
+		
+		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList);
 		gos_obj.gossip_listener();
 		
 		

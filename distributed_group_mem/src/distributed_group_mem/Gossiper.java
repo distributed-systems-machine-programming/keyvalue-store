@@ -3,15 +3,16 @@ package distributed_group_mem;
 import java.util.*;
 
 public class Gossiper extends Thread{
-	Messenger messenger = new Messenger();
+	Messenger messenger = null;
 	MemberList receivedList = null;
 	int port;
 	int GossipSendingRate;
 	
-	Gossiper(int port, int GossipSendingRate)
+	Gossiper(int port, int GossipSendingRate, MemberList localMemList) throws Exception
 	{
 		this.port = port;
 		this.GossipSendingRate = GossipSendingRate;
+		messenger = new Messenger(port, localMemList);
 	}
 	public void gossip_listener()
 	{
@@ -48,12 +49,12 @@ public class Gossiper extends Thread{
 		  }
 
 		private ArrayList<String> getSenderList(int noOfSenders) {
-			// TODO Auto-generated method stub
+			// TODO get a list of random nodes that are not marked as failed
 			return null;
 		}
 
 		private int getNoOfSenders() {
-			// TODO Auto-generated method stub
+			// TODO write some algorithm to do this correctly
 			return 0;
 		}
 		};
