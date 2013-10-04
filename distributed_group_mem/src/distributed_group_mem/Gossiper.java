@@ -60,8 +60,7 @@ public class Gossiper extends Thread{
 		};
 	Thread gossipListenerThread = new Thread () {
 		  public void run () {
-			  receivedList = messenger.getMessage();
-			  updateLocalMemList(receivedList);
+			  messenger.getMessage();
 		  }
 		};
 		
