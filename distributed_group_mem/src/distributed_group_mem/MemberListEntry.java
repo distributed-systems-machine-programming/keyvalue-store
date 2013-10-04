@@ -13,7 +13,6 @@ public class MemberListEntry implements Serializable {
 		localTimeStamp = getCurrentTime();
 		markForDeletion = false;
 	}
-	
 	public Long getHeartBeat() {return Heartbeat;}
 	public void incrementHeartBeat() {
 		this.Heartbeat += 1;
