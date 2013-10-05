@@ -17,6 +17,7 @@ public class Messenger implements Runnable {
 	private InetAddress sendAddress;
 	private byte[] sendData = new byte[BUFFER_SIZE]; 
     private byte[] receiveData = new byte[BUFFER_SIZE];
+    private byte[] tempData = new byte[BUFFER_SIZE];
     private int sendPort;
     private MessageStore ms = null;
     private int listenerPort;
@@ -95,8 +96,20 @@ public class Messenger implements Runnable {
 	
 	private MemberList getMemberListFromBytes(byte[] bytes) {
 		// TODO Aswin's Code
-		return null;
-	}
+		MemberList temp = null;
+		try{
+        ByteArrayInputStream baos = new ByteArrayInputStream(bytes);
+        ObjectInputStream oos = new ObjectInputStream(baos);
+        temp = (MemberList)oos.readObject();
+		}catch (IOException e) {
+            e.printStackTrace();	            
+	    } catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return temp;
+	}	
+	
 
 	public MemberList getMessage()
 	{
@@ -171,11 +184,20 @@ public class Messenger implements Runnable {
 		read.lock();
 		  try {
 		    //TODO Aswin's code comes here
-		  } finally {
-		    read.unlock();
-		    System.out.println("Got some issues in trying to read the membership list");
-		  }
-		return null;
+              ByteArrayOutputStream bao = new ByteArrayOutputStream(1024);
+        	  ObjectOutputStream oos = new ObjectOutputStream(bao);
+        	  oos.writeObject(localMemberList2);     	   
+              tempData = bao.toByteArray();
+//              DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);               
+//              socket.send(packet);			  
+		  }	catch (IOException e) {
+	            e.printStackTrace();	            
+		    }
+		  	finally {
+		  		read.unlock();
+		  		System.out.println("Got some issues in trying to read the membership list");
+		  	}
+		return tempData;
 	}
 
 	private ArrayList<byte[]> generateUDPreadyMessage(byte[] sendMessage, String messageType) {

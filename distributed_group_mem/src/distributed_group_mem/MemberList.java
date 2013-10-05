@@ -32,8 +32,6 @@ public class MemberList implements Serializable {
 		return this.memList.size();
 	}
 
-	public ArrayList<MemberListEntry> getFullList() { return memList;}
-	
 	
 	MemberListEntry findEntry (String MachineID)
 	{
@@ -48,8 +46,30 @@ public class MemberList implements Serializable {
 		return blank;
 	}
 	
-	public void mergeMemberList(MemberList incomingMemberList) {
+	public void addEntry(String incomingMachineID, MemberList ml) {
+		// TODO Aswin's addEntry code
+		this.memList.add(new MemberListEntry(incomingMachineID));
+		int currentSize = this.memList.size()-1;		
+		this.memList.get(currentSize).setMachineID(incomingMachineID);
+		this.memList.get(currentSize).setHeartBeat(ml.memList.get(0).getHeartBeat());
+		this.memList.get(currentSize).setlocalTimeStamp();  // To be confirmed.
+		this.memList.get(currentSize).setDeletionStatus(false);	
 		
+	}
+
+	public void removeEntry(String remoteMachineID) {
+		// TODO Aswin's code
+		for (int i = 0; i < this.memList.size(); i++) {
+			if (this.memList.get(i).getMachineID().equals(remoteMachineID))
+			{
+				this.memList.remove(i);
+			}
+		}
+		
+	}
+
+	public void updateList(String remoteMachineID, MemberList incomingMemberList) {
+		// TODO Aswin's code
 		int localIndex=0,otherIndex=0;
 		String currentIP;
 		int localMemberListsize = this.memList.size();
@@ -82,23 +102,7 @@ public class MemberList implements Serializable {
 				this.memList.get(currentSize).setDeletionStatus(false);	
 				
 			}
-		
-		
 	}
-}
-
-	public void addEntry(String remoteMachineID, MemberList remoteData) {
-		// TODO Aswin's addEntry code
-		
-	}
-
-	public void removeEntry(String remoteMachineID) {
-		// TODO Aswin's code
-		
-	}
-
-	public void updateList(String remoteMachineID, MemberList remoteData) {
-		// TODO Aswin's code
 		
 	}
 	
