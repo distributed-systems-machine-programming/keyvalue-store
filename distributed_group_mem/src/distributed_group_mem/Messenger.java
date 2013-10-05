@@ -294,17 +294,18 @@ public class Messenger implements Runnable {
 			int tableSize = this.getMessengerMemberList().getFullList().size();
 			for (int i = 0; i < tableSize ; i++) {
 				String deleteMachineID = this.getMessengerMemberList().getFullList().get(i).getMachineID();
-				if( (getCurrentTime() - this.getMessengerMemberList().getFullList().get(i).getLocalTimeStamp()) > FailureCleanUpRate) ) {
+				Long timestampDifference = this.getCurrentTime() - this.getMessengerMemberList().getFullList().get(i).getLocalTimeStamp();
+				if( timestampDifference >= FailureCleanUpRate) ) {
 					this.getMessengerMemberList().getFullList().remove(i);
 					System.out.println(deleteMachineID);
 					//Log the Entry.
 				}
-				else if( (getCurrentTime() - this.getMessengerMemberList().getFullList().get(i).getLocalTimeStamp()) > FailureTimeOut) ) {
+				else if( timestampDifference >= FailureTimeOut && timestampDifference < FailureCleanUpRate ) ) {
 					this.getMessengerMemberList().getFullList().get(i).setDeletionStatus(true);
 					System.out.println(deleteMachineID);
 					//Log the Entry
 				}
-			}
+			} 
 		}finally {
 		    read.unlock();
 		    System.out.println("Got some issues in trying to delete the membership list");
@@ -380,13 +381,6 @@ public class Messenger implements Runnable {
 		return  System.currentTimeMillis() / 1000L;
 		
 	}
-	
-		
-	
-
-	
-	
-	
 	
 }
 
