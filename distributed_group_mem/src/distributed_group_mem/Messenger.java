@@ -110,7 +110,6 @@ public class Messenger implements Runnable {
 		return temp;
 	}	
 	
-
 	public MemberList getMessage()
 	{
 		
@@ -283,16 +282,34 @@ public class Messenger implements Runnable {
 		  ArrayList<String> ListofSendMachineIDs = getSenderList();
 		  ArrayList<String> listofSendMachineIPs = getMachineIPsfromIDs(ListofSendMachineIDs);
 		  failureDetector();
-		 sendMessage(listofSendMachineIPs, "update");
+		  sendMessage(listofSendMachineIPs, "update");
 		
 		
 	}
 	
 	private void failureDetector() {
 		// TODO Aswin's code
-		
+		read.lock();
+		try{
+			int tableSize = this.getMessengerMemberList().getFullList().size();
+			for (int i = 0; i < tableSize ; i++) {
+				String deleteMachineID = this.getMessengerMemberList().getFullList().get(i).getMachineID();
+				if( (getCurrentTime() - this.getMessengerMemberList().getFullList().get(i).getLocalTimeStamp()) > FailureCleanUpRate) ) {
+					this.getMessengerMemberList().getFullList().remove(i);
+					System.out.println(deleteMachineID);
+					//Log the Entry.
+				}
+				else if( (getCurrentTime() - this.getMessengerMemberList().getFullList().get(i).getLocalTimeStamp()) > FailureTimeOut) ) {
+					this.getMessengerMemberList().getFullList().get(i).setDeletionStatus(true);
+					System.out.println(deleteMachineID);
+					//Log the Entry
+				}
+			}
+		}finally {
+		    read.unlock();
+		    System.out.println("Got some issues in trying to delete the membership list");
+		  }
 	}
-
 	private ArrayList<String> getSenderList() {
 		int count=0;
 		
@@ -355,7 +372,14 @@ public class Messenger implements Runnable {
 		sendMessage(listofSendMachineIPs, "leave");
 		
 	}
-
+	public MemberList getMessengerMemberList() {
+		return localMemberList;
+	}
+	private Long getCurrentTime()
+	{
+		return  System.currentTimeMillis() / 1000L;
+		
+	}
 	
 		
 	
