@@ -17,7 +17,6 @@ public class MemberListEntry implements Serializable {
 	public void incrementHeartBeat() {
 		this.Heartbeat += 1;
 	}
-	
 	public void updateHeartBeat (Long hb)
 	{
 		if(hb>this.Heartbeat)
