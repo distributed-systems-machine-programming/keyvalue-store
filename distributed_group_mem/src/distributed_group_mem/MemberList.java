@@ -84,6 +84,21 @@ public class MemberList implements Serializable {
 		
 	}
 }
+
+	public void addEntry(String remoteMachineID, MemberList remoteData) {
+		// TODO Aswin's addEntry code
+		
+	}
+
+	public void removeEntry(String remoteMachineID) {
+		// TODO Aswin's code
+		
+	}
+
+	public void updateList(String remoteMachineID, MemberList remoteData) {
+		// TODO Aswin's code
+		
+	}
 	
 }
 

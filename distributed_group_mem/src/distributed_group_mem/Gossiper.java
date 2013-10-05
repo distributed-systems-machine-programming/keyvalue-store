@@ -8,12 +8,14 @@ public class Gossiper extends Thread{
 	MemberList receivedList = null;
 	int port;
 	int GossipSendingRate;
+	String mID;
 	
-	Gossiper(int port, int GossipSendingRate, MemberList localMemList) throws Exception
+	Gossiper(int port, int GossipSendingRate, MemberList localMemList, String mID) throws Exception
 	{
 		this.port = port;
 		this.GossipSendingRate = GossipSendingRate;
-		messenger = new Messenger(port, localMemList);
+		this.mID = mID;
+		messenger = new Messenger(port, localMemList,mID);
 	}
 	public void gossip_listener()
 	{
@@ -37,7 +39,7 @@ public class Gossiper extends Thread{
 			  {
 				  int NoOfSenders = getNoOfSenders();
 				  ArrayList<String> ListofSendMachineIDs = getSenderList(NoOfSenders);
-				  messenger.sendMessage(ListofSendMachineIDs);
+				  messenger.sendMessage(ListofSendMachineIDs, "update");
 				  try {
 					    Thread.sleep(GossipSendingRate);
 					} catch(InterruptedException ex) {
@@ -58,11 +60,25 @@ public class Gossiper extends Thread{
 			return 0;
 		}
 		};
+		
 	Thread gossipListenerThread = new Thread () {
 		  public void run () {
 			  messenger.getMessage();
 		  }
 		};
+
+	public void joinRequest(String string) {
+		// TODO write code for join request
+		
+	}
+	public void stopGossip() {
+		// TODO Auto-generated method stub
+		
+	}
+	public void stopGossipListener() {
+		// TODO Auto-generated method stub
+		
+	}
 		
 
 }

@@ -1,4 +1,3 @@
-
 package distributed_group_mem;
 
 
@@ -36,7 +35,7 @@ public class runner {
 		
 		//INITIALIZE THE PARAMETERS
 		initParams();
-		
+		int listenerPort= 9898;
 		
 		//ASSIGN MACHINE IDs
 		String fullMachineID = getFullMachineID();
@@ -63,25 +62,63 @@ public class runner {
 		//FailureDetector fd = new FailureDetector();
 		
 		//INITIALIZE GOSSIP LISTENER
-		int listenerPort;
-		if (args.length < 2)
-			 listenerPort= 9898;
-		else
-		{
-			 listenerPort = Integer.parseInt(args[1]);
-		}
 		
-		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList);
+		
+		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID);
 		gos_obj.gossip_listener();
 		
-		
-		
+		String[] temp;
+		boolean firstTimeJoin = true;
 		while(true)
 		{
 			System.out.println("Enter the command.");
 			System.out.println(">");
 			LOGGER.info(fullMachineID+" # "+"Getting input");
 			input = br.readLine();
+			temp = input.split(" ");
+			if(temp[0].equals("join"))
+			{
+				if(firstTimeJoin)
+				{
+					gos_obj.joinRequest(temp[1]);
+					gos_obj.gossip();
+					firstTimeJoin = false;
+				}
+				else
+				{
+					fullMachineID = getFullMachineID();
+					shortMachineID = getShortMachineID();
+					try {
+					      LogWriter.setup(shortMachineID);
+					    } catch (IOException e) {
+					      e.printStackTrace();
+					      throw new RuntimeException("Problems with creating the log files");
+					    }
+					memberList = new MemberList(fullMachineID);
+					dil = new Heart(HeartRate, memberList, fullMachineID);
+					gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID);
+					gos_obj.gossip_listener();
+					gos_obj.joinRequest(temp[1]);
+					gos_obj.gossip();
+					
+				}
+				
+				
+			}
+			else if(temp[0].equals("leave"))
+			{
+				gos_obj.stopGossip();
+				gos_obj.stopGossipListener();
+			}
+			else if(temp[0].equalsIgnoreCase("quit") | temp[0].equalsIgnoreCase("exit") )
+			{
+				System.exit(0);
+				
+			}
+			else
+			{
+				System.out.println("Invalid Command. Please enter again");
+			}
 		}
 		
 		
@@ -241,4 +278,3 @@ public class runner {
 	
 	
 }
-
