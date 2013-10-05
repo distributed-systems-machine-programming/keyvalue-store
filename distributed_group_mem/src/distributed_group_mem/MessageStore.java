@@ -2,13 +2,14 @@ package distributed_group_mem;
 
 import java.util.ArrayList;
 
-//A data structure to store all the partial messages received
+//A data structure to store all the partially received messages
+
 public class MessageStore {
 	
 	ArrayList<MessageStoreEntry> Messages = new ArrayList<MessageStoreEntry>();
 	
 	
-	public String push(String partMessage)
+	public byte[] push(byte[] partMessage)
 	{
 		MessageStoreEntry temp = parseHeader(partMessage);
 		if(fetchEntry(temp.getID()))
@@ -17,7 +18,13 @@ public class MessageStore {
 			temp1.update(temp);
 			if(temp1.isMessageReady())
 			{
-				return temp1.getMessage();
+				 byte[] tempSend = (" #$ #$ #$update#$"+temp1.getMachineID()).getBytes();
+				 byte[] c = new byte[tempSend.length + temp1.getMessage().length];
+					System.arraycopy(tempSend, 0, c, 0, tempSend.length);
+					System.arraycopy(temp1.getMessage(), 0, c, tempSend.length, temp1.getMessage().length);
+					return c;
+				 
+				 
 			}
 			else
 			{
@@ -28,7 +35,11 @@ public class MessageStore {
 		{
 			if(temp.isMessageReady())
 			{
-				return temp.getMessage();
+				byte[] tempSend = (" #$ #$ #$ #$"+temp.getMachineID()).getBytes();
+				 byte[] c = new byte[tempSend.length + temp.getMessage().length];
+					System.arraycopy(tempSend, 0, c, 0, tempSend.length);
+					System.arraycopy(temp.getMessage(), 0, c, tempSend.length, temp.getMessage().length);
+					return c;
 			}
 			else
 			{
@@ -41,10 +52,10 @@ public class MessageStore {
 	}
 
 
-	private MessageStoreEntry parseHeader(String partMessage) {
-		String[] brokenmessage = partMessage.split("#$");
+	private MessageStoreEntry parseHeader(byte[] partMessage) {
+		String[] brokenmessage = new String(partMessage).split("#$");
 	
-		return new MessageStoreEntry(brokenmessage[0],brokenmessage[1],brokenmessage[2],brokenmessage[3]);
+		return new MessageStoreEntry(brokenmessage[0],brokenmessage[1],brokenmessage[2],brokenmessage[3], brokenmessage[4].getBytes());
 	}
 
 

@@ -23,7 +23,7 @@ public class Heart extends Thread{
 		while(true)
 		{
 			LOGGER.fine(MachineID + " # " + "HeartBeat value - " + Long.toString(localEntry.getHeartBeat()));
-			localEntry.updateLocalHeartBeat();
+			localEntry.incrementHeartBeat();
 			try {
 			    Thread.sleep(HeartRate);
 			} catch(InterruptedException ex) {
