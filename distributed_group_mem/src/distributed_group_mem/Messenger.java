@@ -2,15 +2,8 @@
 package distributed_group_mem;
 
 import java.io.*;
-import java.io.IOException;
 import java.net.*;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.PortUnreachableException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.*;
-import java.util.Collections;
 import java.util.concurrent.locks.*;
 
 public class Messenger implements Runnable {
@@ -30,6 +23,8 @@ public class Messenger implements Runnable {
     private byte[] newMessage;
     private int messageCount;
     private String localMachineID;
+    private boolean joinConfirm = false;
+  
     
 	Messenger (int port, MemberList localList, String machineID) throws Exception
 	{
@@ -52,8 +47,10 @@ public class Messenger implements Runnable {
 	{
 		 String[] parts = new String(newMessage).split("#$");
 		 String remoteMachineID = parts[4];
+		 
 		 ArrayList<String> blah = new ArrayList<String>();
 		 blah.add(remoteMachineID);
+		 ArrayList<String> remoteMachineIPBlah =  getMachineIPsfromIDs(blah);
 		 MemberList remoteData = getMemberListFromBytes(parts[5].getBytes());
 		 String command = parts[3];
 		 if(command.equals("join"))
@@ -61,9 +58,11 @@ public class Messenger implements Runnable {
 			 write.lock();
 			  try {
 				  localMemberList.addEntry(remoteMachineID, remoteData);
-					 sendMessage(blah, "update");
+					 
 			  } finally {
 			    write.unlock();
+			  
+			    sendMessage(remoteMachineIPBlah, "update");
 			    System.out.println("Got some issues in trying to add to the membership list");
 			  }
 		 }
@@ -111,6 +110,7 @@ public class Messenger implements Runnable {
 		      String[] parts = new String(receivePacket.getData()).split("#$");
 				if(parts[3].equals("join"))
 				{
+					joinConfirm = true;
 					newMessage = receivePacket.getData();
 					new Thread().start();
 				}
@@ -144,11 +144,11 @@ public class Messenger implements Runnable {
 	
 	
 
-	public void sendMessage(ArrayList<String> listofSendMachineIDs, String messageType)
+	public void sendMessage(ArrayList<String> listofSendMachineIPs, String messageType)
 	{
 		byte[] sendMessage = generateMessage(localMemberList);	
 		ArrayList<byte[]> UDPreadymessages = generateUDPreadyMessage(sendMessage, messageType);
-		ArrayList<String> listofSendMachineIPs = getMachineIPsfromIDs(listofSendMachineIDs);
+		
 		send(UDPreadymessages, listofSendMachineIPs);
 	}
 
@@ -259,8 +259,9 @@ public class Messenger implements Runnable {
 	public void sendLocalMemList() {
 		
 		  ArrayList<String> ListofSendMachineIDs = getSenderList();
+		  ArrayList<String> listofSendMachineIPs = getMachineIPsfromIDs(ListofSendMachineIDs);
 		  failureDetector();
-		 sendMessage(ListofSendMachineIDs, "update");
+		 sendMessage(listofSendMachineIPs, "update");
 		
 		
 	}
@@ -272,9 +273,10 @@ public class Messenger implements Runnable {
 
 	private ArrayList<String> getSenderList() {
 		int count=0;
-		read.lock();
+		
 		ArrayList<String> allIPs = null;
 		ArrayList<String> senderIPs = null;
+		read.lock();
 		  try {
 				for (int i=0; i<localMemberList.getSize(); i++)
 				{
@@ -299,30 +301,40 @@ public class Messenger implements Runnable {
 	
 	}
 
-	public void sendJoinRequest(String iPListFileName) {
-		ArrayList<String> ListofIPs = null;
-		try
-		{
-				FileInputStream fs = new FileInputStream (iPListFileName); 
-				BufferedReader br = new BufferedReader(new InputStreamReader(fs));
-				String IP=null;
-				while ((IP = br.readLine()) != null)
-				{
-						ListofIPs.add(IP);
-				}
-		}
-		catch(FileNotFoundException e)
-		{	
-			System.out.println("Could not open the file with IP List.");
-		}
-		catch(IOException e)
-		{	
-			System.out.println("Could not read the file with IP List.");
-		}
+	public boolean sendJoinRequest(String contactIP) {
 		
+		ArrayList<String> ListofIPs = new ArrayList<String>();
+		ListofIPs.add(contactIP);
+		sendMessage(ListofIPs, "join");
+		int i=0;
+		boolean flag=false;
+		while(!joinConfirm && i<1000)
+		{
+		try{	
+			Thread.sleep(100);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Thread sleep error");
+		}
+			i++;
+		}
+		if(i<1000)
+			flag=true;
+		
+		return flag;
 		
 		
 	}
+
+	public void sendLeaveRequest() {
+		ArrayList<String> ListofMachineIDs = getSenderList();
+		ArrayList<String> listofSendMachineIPs = getMachineIPsfromIDs(ListofMachineIDs);
+		sendMessage(listofSendMachineIPs, "leave");
+		
+	}
+
+	
 		
 	
 

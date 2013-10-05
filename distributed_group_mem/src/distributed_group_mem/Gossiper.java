@@ -29,10 +29,7 @@ public class Gossiper extends Thread{
 	{
 		gossipThread.start();
 	}
-	private void updateLocalMemList(MemberList receivedList2) {
-		
-		
-	}
+	
 	
 	Thread gossipThread = new Thread () {
 		  public void run () {
@@ -59,8 +56,16 @@ public class Gossiper extends Thread{
 		  }
 		};
 
-	public void joinRequest(String IPListFileName) {
-		messenger.sendJoinRequest(IPListFileName);
+	public void joinRequest(String contactIP) {
+		boolean success = messenger.sendJoinRequest(contactIP);
+		if(success)
+		{
+			System.out.println("Joined the group successfully.");
+		}
+		else
+		{
+			System.out.println("Unable to join the group.");
+		}
 		
 	}
 	public void stopGossip() {
@@ -69,6 +74,10 @@ public class Gossiper extends Thread{
 	}
 	public void stopGossipListener() {
 		gossipListenerThread.interrupt();
+		
+	}
+	public void leaveRequest() {
+		messenger.sendLeaveRequest();
 		
 	}
 		

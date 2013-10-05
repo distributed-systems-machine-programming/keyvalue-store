@@ -57,9 +57,7 @@ public class runner {
 		
 		Heart dil = new Heart(HeartRate, memberList, fullMachineID);
 		
-		//INITIALIZE FAILURE DETECTOR
 		
-		//FailureDetector fd = new FailureDetector();
 		
 		//INITIALIZE GOSSIP LISTENER
 		
@@ -107,8 +105,10 @@ public class runner {
 			}
 			else if(temp[0].equals("leave"))
 			{
+				gos_obj.leaveRequest();
 				gos_obj.stopGossip();
 				gos_obj.stopGossipListener();
+				dil.interrupt();
 			}
 			else if(temp[0].equalsIgnoreCase("quit") | temp[0].equalsIgnoreCase("exit") )
 			{
