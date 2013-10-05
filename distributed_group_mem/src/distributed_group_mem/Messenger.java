@@ -259,11 +259,17 @@ public class Messenger implements Runnable {
 	public void sendLocalMemList() {
 		
 		  ArrayList<String> ListofSendMachineIDs = getSenderList();
+		  failureDetector();
 		 sendMessage(ListofSendMachineIDs, "update");
 		
 		
 	}
 	
+	private void failureDetector() {
+		// TODO Aswin's code
+		
+	}
+
 	private ArrayList<String> getSenderList() {
 		int count=0;
 		read.lock();
