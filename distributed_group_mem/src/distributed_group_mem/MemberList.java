@@ -6,7 +6,7 @@ import java.util.*;
 
 public class MemberList implements Serializable {
 	
-	ArrayList<MemberListEntry> memList = new ArrayList<MemberListEntry>();
+	private ArrayList<MemberListEntry> memList = new ArrayList<MemberListEntry>();
 	
 	MemberList (String localMachineID)
 	{
@@ -47,7 +47,7 @@ public class MemberList implements Serializable {
 	}
 	
 	public void addEntry(String incomingMachineID, MemberList ml) {
-		// TODO Aswin's addEntry code
+		
 		this.memList.add(new MemberListEntry(incomingMachineID));
 		int currentSize = this.memList.size()-1;		
 		this.memList.get(currentSize).setMachineID(incomingMachineID);
@@ -58,7 +58,7 @@ public class MemberList implements Serializable {
 	}
 
 	public void removeEntry(String remoteMachineID) {
-		// TODO Aswin's code
+	
 		for (int i = 0; i < this.memList.size(); i++) {
 			if (this.memList.get(i).getMachineID().equals(remoteMachineID))
 			{
@@ -69,7 +69,7 @@ public class MemberList implements Serializable {
 	}
 
 	public void updateList(String remoteMachineID, MemberList incomingMemberList) {
-		// TODO Aswin's code
+		
 		int localIndex=0,otherIndex=0;
 		String currentIP;
 		int localMemberListsize = this.memList.size();
@@ -106,8 +106,17 @@ public class MemberList implements Serializable {
 		
 	}
 
-	public ArrayList<MemberListEntry> getFullList() { return memList;
-		
+	public ArrayList<MemberListEntry> getFullList() { return memList;	}
+	
+	public String Print()
+	{
+		String printString = new String();
+		for (int i=0; i< memList.size(); i++)
+		{
+			printString += "\n";
+			printString += memList.get(i).getInline();
+		}
+		return printString;
 	}
 	
 }

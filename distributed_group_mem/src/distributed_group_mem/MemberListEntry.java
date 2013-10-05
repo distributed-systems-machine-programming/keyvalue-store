@@ -58,8 +58,14 @@ public class MemberListEntry implements Serializable {
 		return this.localTimeStamp;
 	}
 	public String getMachineIP() {
-		String[] breakMessage = MachineID.split("+");
+		String[] breakMessage = MachineID.split("\\+");
 		return breakMessage[0];
 		
 	}
+	
+	public String getInline(){
+		return MachineID + " " + String.valueOf(Heartbeat) + " " + String.valueOf(localTimeStamp)+" " + String.valueOf(markForDeletion);
+	}
+	
+	
 }

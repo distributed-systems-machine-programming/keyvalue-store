@@ -6,7 +6,7 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
 
-public class Messenger implements Runnable {
+public class Messenger {
 	private final static int BUFFER_SIZE = 1500; ///using 1500 as its the recommended safe size for a UDP packet
 	private MemberList localMemberList = null;
 	private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -44,9 +44,9 @@ public class Messenger implements Runnable {
 		
 	}
 
-	public void run()
+	/*public void run()
 	{
-		 String[] parts = new String(newMessage).split("#$");
+		 String[] parts = new String(newMessage).split("-");
 		 String remoteMachineID = parts[4];
 		 
 		 ArrayList<String> blah = new ArrayList<String>();
@@ -92,10 +92,10 @@ public class Messenger implements Runnable {
 			
 		 
 		
-	}
+	}*/
 	
 	private MemberList getMemberListFromBytes(byte[] bytes) {
-		// TODO Aswin's Code
+		
 		MemberList temp = null;
 		try{
         ByteArrayInputStream baos = new ByteArrayInputStream(bytes);
@@ -104,14 +104,14 @@ public class Messenger implements Runnable {
 		}catch (IOException e) {
             e.printStackTrace();	            
 	    } catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 		return temp;
 	}	
 	
 
-	public MemberList getMessage()
+	/*public MemberList getMessage()
 	{
 		
 		while (true)
@@ -120,24 +120,63 @@ public class Messenger implements Runnable {
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		      receiveSocket.receive(receivePacket);
 		    
-		      String[] parts = new String(receivePacket.getData()).split("#$");
-				if(parts[3].equals("join"))
+		      String[] brrr = new String(receivePacket.getData()).split("-");
+				if(brrr[3].equals("join"))
 				{
 					joinConfirm = true;
 					newMessage = receivePacket.getData();
-					new Thread().start();
+					String[] parts = new String(newMessage).split("-");
+					 String remoteMachineID = parts[4];
+					 
+					 ArrayList<String> blah = new ArrayList<String>();
+					 blah.add(remoteMachineID);
+					 ArrayList<String> remoteMachineIPBlah =  getMachineIPsfromIDs(blah);
+					 MemberList remoteData = getMemberListFromBytes(parts[5].getBytes());
+					 String command = parts[3];
+					 write.lock();
+					  try {
+						  localMemberList.addEntry(remoteMachineID, remoteData);
+							 
+					  } finally {
+					    write.unlock();
+					  
+					    sendMessage(remoteMachineIPBlah, "update");
+					    System.out.println("Got some issues in trying to add to the membership list");
+					  }
+					
 				}
-				else if(parts[3].equals("leave"))
+				else if(brrr[3].equals("leave"))
 				{
 					newMessage = receivePacket.getData();
-					new Thread().start();
+					
 				}
-				else if(parts[3].equals("update"))
+				else if(brrr[3].equals("update"))
 				{
 					newMessage = ms.push(receivePacket.getData());
-					if(newMessage != null)
+					try{
+					if(!newMessage.equals(null))
 					{
-						new Thread().start();
+						String[] parts = new String(newMessage).split("-");
+						 String remoteMachineID = parts[4];
+						 
+						 ArrayList<String> blah = new ArrayList<String>();
+						 blah.add(remoteMachineID);
+						 ArrayList<String> remoteMachineIPBlah =  getMachineIPsfromIDs(blah);
+						 MemberList remoteData = getMemberListFromBytes(parts[5].getBytes());
+						 String command = parts[3];
+						 write.lock();
+						  try {
+							  localMemberList.updateList(remoteMachineID, remoteData);
+							
+						  } finally {
+						    write.unlock();
+						    System.out.println("Got some issues in trying to update the membership list");
+						  }
+					}
+					}
+					catch(NullPointerException e)
+					{
+						//do nothing and move on
 					}
 				}
 		      
@@ -155,17 +194,76 @@ public class Messenger implements Runnable {
 		
 	}
 	
+	*/
 	
+	public void getMessage()
+	{
+		
+		while (true)
+		{
+			try{
+			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+		      receiveSocket.receive(receivePacket);
+		      joinConfirm = true;
+		      MemberList remoteData = getMemberListFromBytes(receivePacket.getData());
+		      
+		      String remoteMachineID = remoteData.getFullList().get(0).getMachineID();
+		      ArrayList<String> blah = new ArrayList<String>();
+				 blah.add(remoteMachineID);
+				 ArrayList<String> remoteMachineIPBlah =  getMachineIPsfromIDs(blah);
+		      write.lock();
+			  try {
+				  localMemberList.addEntry(remoteMachineID, remoteData);
+					 
+			  } finally {
+			    write.unlock();
+			  
+			    sendMessage(remoteMachineIPBlah, "update");
+			    System.out.println("Got some issues in trying to add to the membership list");
+			  }
+			}catch (IOException e)
+			{
+				System.out.println("Listener unable to fetch data");
+			}
+		
+		}
+		}
+		
+		      
 
 	public void sendMessage(ArrayList<String> listofSendMachineIPs, String messageType)
 	{
 		byte[] sendMessage = generateMessage(localMemberList);	
 		ArrayList<byte[]> UDPreadymessages = generateUDPreadyMessage(sendMessage, messageType);
 		
-		send(UDPreadymessages, listofSendMachineIPs);
+		//send(UDPreadymessages, listofSendMachineIPs);
+		send (sendMessage, listofSendMachineIPs);
 	}
 
 	
+
+	private void send(byte[] sendMessage, ArrayList<String> listofSendMachineIPs) {
+		for(int i=0; i<listofSendMachineIPs.size(); i++)
+		{
+			try {
+					sendAddress = InetAddress.getByName(listofSendMachineIPs.get(i));
+					
+						sendData = sendMessage;
+						DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, sendAddress, listenerPort);
+						sendSocket.send(sendPacket);
+					
+					
+			}catch(UnknownHostException r)
+			{
+				System.out.println("Unable to create an InetAddress for " + listofSendMachineIPs.get(i));
+			}
+			catch(IOException r)
+			{
+				System.out.println("Unable to send data to" + listofSendMachineIPs.get(i));
+			}
+		}
+		
+	}
 
 	private ArrayList<String> getMachineIPsfromIDs(ArrayList<String> listofSendMachineIDs) {
 		
@@ -173,7 +271,7 @@ public class Messenger implements Runnable {
 		ArrayList <String> IPs = null;
 		for (int i=0; i<listofSendMachineIDs.size(); i++)
 		{
-			parts = listofSendMachineIDs.get(i).split("+");
+			parts = listofSendMachineIDs.get(i).split("\\+");
 			IPs.add(parts[0]);
 		}
 			
@@ -183,7 +281,7 @@ public class Messenger implements Runnable {
 	private byte[] generateMessage(MemberList localMemberList2) {
 		read.lock();
 		  try {
-		    //TODO Aswin's code comes here
+		    
               ByteArrayOutputStream bao = new ByteArrayOutputStream(1024);
         	  ObjectOutputStream oos = new ObjectOutputStream(bao);
         	  oos.writeObject(localMemberList2);     	   
@@ -210,7 +308,7 @@ public class Messenger implements Runnable {
 		{
 			if(noOfPackets == 1)
 			{
-				sHeader = messageID + "#$" + String.valueOf("1") + "#$" + String.valueOf("1")+ "#$" + messageType+"#$"+localMachineID+ "#$";
+				sHeader = messageID + "-" + String.valueOf("1") + "-" + String.valueOf("1")+ "-" + messageType+"-"+localMachineID+ "-";
 				bHeader = sHeader.getBytes();
 				byte[] c = new byte[bHeader.length + sendMessage.length];
 				System.arraycopy(bHeader, 0, c, 0, bHeader.length);
@@ -221,7 +319,7 @@ public class Messenger implements Runnable {
 			{
 				for(int i=1; i<=noOfPackets; i++)
 				{
-					sHeader = messageID + "#$" + String.valueOf(noOfPackets) + "#$" + String.valueOf(i)+ "#$" + messageType+"#$"+localMachineID+ "#$";
+					sHeader = messageID + "-" + String.valueOf(noOfPackets) + "-" + String.valueOf(i)+ "-" + messageType+"-"+localMachineID+ "-";
 					bHeader = sHeader.getBytes();
 					byte[] c = new byte[bHeader.length + BUFFER_SIZE];
 					System.arraycopy(bHeader, 0, c, 0, bHeader.length);
@@ -232,7 +330,7 @@ public class Messenger implements Runnable {
 		}
 		else if(messageType.equals("join"))
 		{
-			sHeader = messageID + "#$" + String.valueOf("1") + "#$" + String.valueOf("1")+ "#$" + messageType+"#$"+localMachineID+ "#$";
+			sHeader = messageID + "-" + String.valueOf("1") + "-" + String.valueOf("1")+ "-" + messageType+"-"+localMachineID+ "-";
 			bHeader = sHeader.getBytes();
 			byte[] c = new byte[bHeader.length + sendMessage.length];
 			System.arraycopy(bHeader, 0, c, 0, bHeader.length);
@@ -242,7 +340,7 @@ public class Messenger implements Runnable {
 		}
 		else if(messageType.equals("leave"))
 		{
-			sHeader = messageID + "#$" + String.valueOf("1") + "#$" + String.valueOf("1")+ "#$" + messageType+"#$"+localMachineID+ "#$";
+			sHeader = messageID + "-" + String.valueOf("1") + "-" + String.valueOf("1")+ "-" + messageType+"-"+localMachineID+ "-";
 			bHeader = sHeader.getBytes();
 			allPackets.add(bHeader);
 			
@@ -289,7 +387,7 @@ public class Messenger implements Runnable {
 	}
 	
 	private void failureDetector() {
-		// TODO Aswin's code
+		// TODO Aswin's code for Failure Detector
 		
 	}
 
