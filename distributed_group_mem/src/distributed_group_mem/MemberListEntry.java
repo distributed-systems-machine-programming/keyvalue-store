@@ -1,3 +1,5 @@
+package distributed_group_mem;
+
 import java.io.Serializable;
 
 public class MemberListEntry implements Serializable {
@@ -14,9 +16,11 @@ public class MemberListEntry implements Serializable {
 		markForDeletion = false;
 	}
 	public Long getHeartBeat() {return Heartbeat;}
+
 	public void incrementHeartBeat() {
 		this.Heartbeat += 1;
 	}
+	
 	public void updateHeartBeat (Long hb)
 	{
 		if(hb>this.Heartbeat)
@@ -30,11 +34,13 @@ public class MemberListEntry implements Serializable {
 	}	
 	
 	public String getMachineID() {return MachineID;}
+	
 	public void setMachineID(String MachineID) {
 		this.MachineID = MachineID;
 	}
 	
 	public boolean getDeletionStatus() {return markForDeletion;}
+	
 	public void setDeletionStatus(boolean value) { this.markForDeletion = value; }
 		
 	private Long getCurrentTime()

@@ -1,3 +1,4 @@
+package distributed_group_mem;
 
 import java.io.Serializable;
 import java.util.*;
