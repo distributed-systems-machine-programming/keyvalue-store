@@ -22,7 +22,7 @@ public class Messenger {
     private MessageStore ms = null;
     private int listenerPort;
     private byte[] newMessage;
-    private int messageCount;
+    private int messageCount = 1;
     private String localMachineID;
     private boolean joinConfirm = false;
     private int failureCleanUpRate;
@@ -50,7 +50,7 @@ public class Messenger {
 
 	/*public void run()
 	{
-		 String[] parts = new String(newMessage).split("-");
+		 String[] parts = new String(newMessage).split("---,,,");
 		 String remoteMachineID = parts[4];
 		 
 		 ArrayList<String> blah = new ArrayList<String>();
@@ -116,7 +116,7 @@ public class Messenger {
 	
 
 
-	/*public MemberList getMessage()
+/*	public MemberList getMessage()
 
 	{
 		
@@ -126,19 +126,19 @@ public class Messenger {
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		      receiveSocket.receive(receivePacket);
 		    
-		      String[] brrr = new String(receivePacket.getData()).split("-");
+		      String[] brrr = new String(receivePacket.getData()).split("---,,,");
 				if(brrr[3].equals("join"))
 				{
 					joinConfirm = true;
 					newMessage = receivePacket.getData();
-					String[] parts = new String(newMessage).split("-");
+					String[] parts = new String(newMessage).split("---,,,");
 					 String remoteMachineID = parts[4];
 					 
 					 ArrayList<String> blah = new ArrayList<String>();
 					 blah.add(remoteMachineID);
 					 ArrayList<String> remoteMachineIPBlah =  getMachineIPsfromIDs(blah);
 					 MemberList remoteData = getMemberListFromBytes(parts[5].getBytes());
-					 String command = parts[3];
+					 
 					 write.lock();
 					  try {
 						  localMemberList.addEntry(remoteMachineID, remoteData);
@@ -162,14 +162,10 @@ public class Messenger {
 					try{
 					if(!newMessage.equals(null))
 					{
-						String[] parts = new String(newMessage).split("-");
+						String[] parts = new String(newMessage).split("---,,,");
 						 String remoteMachineID = parts[4];
-						 
-						 ArrayList<String> blah = new ArrayList<String>();
-						 blah.add(remoteMachineID);
-						 ArrayList<String> remoteMachineIPBlah =  getMachineIPsfromIDs(blah);
 						 MemberList remoteData = getMemberListFromBytes(parts[5].getBytes());
-						 String command = parts[3];
+						
 						 write.lock();
 						  try {
 							  localMemberList.updateList(remoteMachineID, remoteData);
@@ -211,22 +207,61 @@ public class Messenger {
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		      receiveSocket.receive(receivePacket);
 		      joinConfirm = true;
-		      MemberList remoteData = getMemberListFromBytes(receivePacket.getData());
-		      
+		      byte[] type = new byte[1];
+		      byte[] data = new byte[BUFFER_SIZE];
+				System.arraycopy(receivePacket.getData(), 0, type, 0, 1);
+				System.arraycopy(receivePacket.getData(), 1, data, 0, BUFFER_SIZE-1);
+		      String sType = new String(type);
+				System.out.println(sType);
+		      MemberList remoteData = getMemberListFromBytes(data);
+		      System.out.println(remoteData.Print());
 		      String remoteMachineID = remoteData.getFullList().get(0).getMachineID();
-		      ArrayList<String> blah = new ArrayList<String>();
-				 blah.add(remoteMachineID);
-				 ArrayList<String> remoteMachineIPBlah =  getMachineIPsfromIDs(blah);
-		      write.lock();
-			  try {
-				  localMemberList.addEntry(remoteMachineID, remoteData);
-					 
-			  } finally {
-			    write.unlock();
-			  
-			    sendMessage(remoteMachineIPBlah, "update");
-			    System.out.println("Got some issues in trying to add to the membership list");
+		      System.out.println(remoteMachineID);
+		      
+		      if(sType.equals("j"))
+		      {
+			      ArrayList<String> blah = new ArrayList<String>();
+					 blah.add(remoteMachineID);
+					 ArrayList<String> remoteMachineIPBlah =  getMachineIPsfromIDs(blah);
+			      write.lock();
+				  try {
+					  System.out.println("Before Add");
+					  localMemberList.addEntry(remoteMachineID, remoteData);
+					  System.out.println("After Add"); 
+				  } finally {
+				    write.unlock();
+				  
+				    sendMessage(remoteMachineIPBlah, "update");
+				    System.out.println("Got some issues in trying to add to the membership list");
+				  }
+				  
 			  }
+		      else if(sType.equals("u"))
+		      {
+		    	  write.lock();
+				  try {
+					  localMemberList.updateList(remoteMachineID, remoteData);
+						 
+				  } finally {
+				    write.unlock();
+				      
+				    System.out.println("Got some issues in trying to update the membership list");
+				  }
+		      }
+		      else if(sType.equals("l"))
+		      {
+		    	  write.lock();
+				  try {
+					  localMemberList.removeEntry(remoteMachineID);
+						 
+				  } finally {
+				    write.unlock();
+				      
+				    System.out.println("Got some issues in trying to update the membership list");
+				  }
+		      }
+		      
+		      
 			}catch (IOException e)
 			{
 				System.out.println("Listener unable to fetch data");
@@ -240,13 +275,46 @@ public class Messenger {
 	public void sendMessage(ArrayList<String> listofSendMachineIPs, String messageType)
 	{
 		byte[] sendMessage = generateMessage(localMemberList);	
-		ArrayList<byte[]> UDPreadymessages = generateUDPreadyMessage(sendMessage, messageType);
-		
-		//send(UDPreadymessages, listofSendMachineIPs);
-		send (sendMessage, listofSendMachineIPs);
+		//ArrayList<byte[]> UDPreadymessages = generateUDPreadyMessage(sendMessage, messageType);
+		ArrayList<byte[]> UDPreadymessages = addHeader(sendMessage, messageType);
+		send(UDPreadymessages, listofSendMachineIPs);
+		//send (sendMessage, listofSendMachineIPs);
+		//addHeader(sendMessage, "join");
+		//addHeader(sendMessage, "update");
+		//addHeader(sendMessage, "leave");
 	}
 
 	
+
+	private ArrayList<byte[]> addHeader(byte[] sendMessage, String messageType) {
+		ArrayList<byte[]> returnData = new ArrayList<byte[]>();
+		String cType;
+		byte[] bType = null;
+		if(messageType.equals("update"))
+		{
+			cType = "u";
+			bType = cType.getBytes();
+			System.out.println(String.valueOf(bType.length));
+			
+		}
+		if(messageType.equals("leave"))
+		{
+			cType = "l";
+			bType = cType.getBytes();
+			System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("join"))
+		{
+			cType = "j";
+			bType = cType.getBytes();
+			System.out.println(String.valueOf(bType.length));
+		}
+		byte[] c = new byte[bType.length + sendMessage.length];
+		System.arraycopy(bType, 0, c, 0, bType.length);
+		System.arraycopy(sendMessage, 0, c, bType.length, sendMessage.length);
+		returnData.add(c);
+		return returnData;
+	}
 
 	private void send(byte[] sendMessage, ArrayList<String> listofSendMachineIPs) {
 		for(int i=0; i<listofSendMachineIPs.size(); i++)
@@ -274,7 +342,7 @@ public class Messenger {
 	private ArrayList<String> getMachineIPsfromIDs(ArrayList<String> listofSendMachineIDs) {
 		
 		String[] parts;
-		ArrayList <String> IPs = null;
+		ArrayList <String> IPs = new ArrayList <String>();
 		for (int i=0; i<listofSendMachineIDs.size(); i++)
 		{
 			parts = listofSendMachineIDs.get(i).split("\\+");
@@ -288,7 +356,7 @@ public class Messenger {
 		read.lock();
 		  try {
 		    
-              ByteArrayOutputStream bao = new ByteArrayOutputStream(1024);
+              ByteArrayOutputStream bao = new ByteArrayOutputStream(BUFFER_SIZE);
         	  ObjectOutputStream oos = new ObjectOutputStream(bao);
         	  oos.writeObject(localMemberList2);     	   
               tempData = bao.toByteArray();
@@ -305,7 +373,7 @@ public class Messenger {
 	}
 
 	private ArrayList<byte[]> generateUDPreadyMessage(byte[] sendMessage, String messageType) {
-		ArrayList<byte[]> allPackets = null;
+		ArrayList<byte[]> allPackets = new ArrayList<byte[]>();
 		String messageID = localMachineID + "&" + String.valueOf(messageCount);
 		String sHeader;
 		byte[] bHeader;
@@ -314,7 +382,7 @@ public class Messenger {
 		{
 			if(noOfPackets == 1)
 			{
-				sHeader = messageID + "-" + String.valueOf("1") + "-" + String.valueOf("1")+ "-" + messageType+"-"+localMachineID+ "-";
+				sHeader = messageID + "---,,," + String.valueOf("1") + "---,,," + String.valueOf("1")+ "---,,," + messageType+"---,,,"+localMachineID+ "---,,,";
 				bHeader = sHeader.getBytes();
 				byte[] c = new byte[bHeader.length + sendMessage.length];
 				System.arraycopy(bHeader, 0, c, 0, bHeader.length);
@@ -325,7 +393,7 @@ public class Messenger {
 			{
 				for(int i=1; i<=noOfPackets; i++)
 				{
-					sHeader = messageID + "-" + String.valueOf(noOfPackets) + "-" + String.valueOf(i)+ "-" + messageType+"-"+localMachineID+ "-";
+					sHeader = messageID + "---,,," + String.valueOf(noOfPackets) + "---,,," + String.valueOf(i)+ "---,,," + messageType+"---,,,"+localMachineID+ "---,,,";
 					bHeader = sHeader.getBytes();
 					byte[] c = new byte[bHeader.length + BUFFER_SIZE];
 					System.arraycopy(bHeader, 0, c, 0, bHeader.length);
@@ -336,7 +404,7 @@ public class Messenger {
 		}
 		else if(messageType.equals("join"))
 		{
-			sHeader = messageID + "-" + String.valueOf("1") + "-" + String.valueOf("1")+ "-" + messageType+"-"+localMachineID+ "-";
+			sHeader = messageID + "---,,," + String.valueOf("1") + "---,,," + String.valueOf("1")+ "---,,," + messageType+"---,,,"+ localMachineID + "---,,,";
 			bHeader = sHeader.getBytes();
 			byte[] c = new byte[bHeader.length + sendMessage.length];
 			System.arraycopy(bHeader, 0, c, 0, bHeader.length);
@@ -346,7 +414,7 @@ public class Messenger {
 		}
 		else if(messageType.equals("leave"))
 		{
-			sHeader = messageID + "-" + String.valueOf("1") + "-" + String.valueOf("1")+ "-" + messageType+"-"+localMachineID+ "-";
+			sHeader = messageID + "---,,," + String.valueOf("1") + "---,,," + String.valueOf("1")+ "---,,," + messageType+"---,,,"+ localMachineID + "---,,,";
 			bHeader = sHeader.getBytes();
 			allPackets.add(bHeader);
 			
@@ -422,8 +490,8 @@ public class Messenger {
 	private ArrayList<String> getSenderList() {
 		int count=0;
 		
-		ArrayList<String> allIPs = null;
-		ArrayList<String> senderIPs = null;
+		ArrayList<String> allIPs = new ArrayList<String>();
+		ArrayList<String> senderIPs = new ArrayList<String>();
 		read.lock();
 		  try {
 				for (int i=0; i<localMemberList.getSize(); i++)
