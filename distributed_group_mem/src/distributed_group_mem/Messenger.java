@@ -1,14 +1,16 @@
 
 package distributed_group_mem;
 
+import java.io.*;
 import java.io.IOException;
-import java.net.DatagramPacket;
+import java.net.*;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.PortUnreachableException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.Collections;
 import java.util.concurrent.locks.*;
 
 public class Messenger implements Runnable {
@@ -23,7 +25,6 @@ public class Messenger implements Runnable {
 	private byte[] sendData = new byte[BUFFER_SIZE]; 
     private byte[] receiveData = new byte[BUFFER_SIZE];
     private int sendPort;
-    private machineReferenceTable machineInfo = null;
     private MessageStore ms = null;
     private int listenerPort;
     private byte[] newMessage;
@@ -145,7 +146,7 @@ public class Messenger implements Runnable {
 
 	public void sendMessage(ArrayList<String> listofSendMachineIDs, String messageType)
 	{
-		byte[] sendMessage = generateMessage(localMemberList);	//whatever will be the data structure of the buffered message. Kept it as string for now.
+		byte[] sendMessage = generateMessage(localMemberList);	
 		ArrayList<byte[]> UDPreadymessages = generateUDPreadyMessage(sendMessage, messageType);
 		ArrayList<String> listofSendMachineIPs = getMachineIPsfromIDs(listofSendMachineIDs);
 		send(UDPreadymessages, listofSendMachineIPs);
@@ -182,7 +183,7 @@ public class Messenger implements Runnable {
 		String messageID = localMachineID + "&" + String.valueOf(messageCount);
 		String sHeader;
 		byte[] bHeader;
-		int noOfPackets = (sendMessage.length%BUFFER_SIZE)+1;
+		int noOfPackets = (sendMessage.length/BUFFER_SIZE)+1;
 		if(messageType.equals("update"))
 		{
 			if(noOfPackets == 1)
@@ -254,6 +255,73 @@ public class Messenger implements Runnable {
 	
 	
 	}
+
+	public void sendLocalMemList() {
+		
+		  ArrayList<String> ListofSendMachineIDs = getSenderList();
+		 sendMessage(ListofSendMachineIDs, "update");
+		
+		
+	}
+	
+	private ArrayList<String> getSenderList() {
+		int count=0;
+		read.lock();
+		ArrayList<String> allIPs = null;
+		ArrayList<String> senderIPs = null;
+		  try {
+				for (int i=0; i<localMemberList.getSize(); i++)
+				{
+					if(localMemberList.getFullList().get(i).isAlive())
+						{
+							count++;
+							allIPs.add(localMemberList.getFullList().get(i).getMachineIP());
+						}
+				}
+				
+		  } finally {
+		    read.unlock();
+		    System.out.println("Got some issues in trying to read the membership list");
+		  }
+		  int noOfSenders = count/2;
+		  Collections.shuffle(allIPs);
+		  for(int i=0; i<noOfSenders; i++)
+			  senderIPs.add(allIPs.get(i));
+		  
+		  return senderIPs;
+		  
+	
+	}
+
+	public void sendJoinRequest(String iPListFileName) {
+		ArrayList<String> ListofIPs = null;
+		try
+		{
+				FileInputStream fs = new FileInputStream (iPListFileName); 
+				BufferedReader br = new BufferedReader(new InputStreamReader(fs));
+				String IP=null;
+				while ((IP = br.readLine()) != null)
+				{
+						ListofIPs.add(IP);
+				}
+		}
+		catch(FileNotFoundException e)
+		{	
+			System.out.println("Could not open the file with IP List.");
+		}
+		catch(IOException e)
+		{	
+			System.out.println("Could not read the file with IP List.");
+		}
+		
+		
+		
+	}
+		
+	
+
+	
+	
 	
 	
 }

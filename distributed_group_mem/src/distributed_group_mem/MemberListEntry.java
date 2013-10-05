@@ -36,6 +36,8 @@ public class MemberListEntry implements Serializable {
 	
 	public String getMachineID() {return MachineID;}
 	
+	public boolean isAlive(){return !markForDeletion;}
+	
 	public void setMachineID(String MachineID) {
 		this.MachineID = MachineID;
 	}
@@ -54,5 +56,10 @@ public class MemberListEntry implements Serializable {
 	}
 	public Long getLocalTimeStamp() {
 		return this.localTimeStamp;
+	}
+	public String getMachineIP() {
+		String[] breakMessage = MachineID.split("+");
+		return breakMessage[0];
+		
 	}
 }

@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Gossiper extends Thread{
 	Messenger messenger = null;
-	MemberList receivedList = null;
+	MemberList localMemList = null;
 	int port;
 	int GossipSendingRate;
 	String mID;
@@ -14,6 +14,7 @@ public class Gossiper extends Thread{
 	{
 		this.port = port;
 		this.GossipSendingRate = GossipSendingRate;
+		this.localMemList = localMemList;
 		this.mID = mID;
 		messenger = new Messenger(port, localMemList,mID);
 	}
@@ -37,9 +38,9 @@ public class Gossiper extends Thread{
 		  public void run () {
 			  while(true)
 			  {
-				  int NoOfSenders = getNoOfSenders();
-				  ArrayList<String> ListofSendMachineIDs = getSenderList(NoOfSenders);
-				  messenger.sendMessage(ListofSendMachineIDs, "update");
+				  
+				  messenger.sendLocalMemList();
+				 
 				  try {
 					    Thread.sleep(GossipSendingRate);
 					} catch(InterruptedException ex) {
@@ -50,16 +51,7 @@ public class Gossiper extends Thread{
 			  
 		  }
 
-		private ArrayList<String> getSenderList(int noOfSenders) {
-			// TODO get a list of random nodes that are not marked as failed
-			return null;
-		}
-
-		private int getNoOfSenders() {
-			// TODO write some algorithm to do this correctly
-			return 0;
-		}
-		};
+	};
 		
 	Thread gossipListenerThread = new Thread () {
 		  public void run () {
@@ -67,16 +59,16 @@ public class Gossiper extends Thread{
 		  }
 		};
 
-	public void joinRequest(String string) {
-		// TODO write code for join request
+	public void joinRequest(String IPListFileName) {
+		messenger.sendJoinRequest(IPListFileName);
 		
 	}
 	public void stopGossip() {
-		// TODO Auto-generated method stub
+		gossipThread.interrupt();
 		
 	}
 	public void stopGossipListener() {
-		// TODO Auto-generated method stub
+		gossipListenerThread.interrupt();
 		
 	}
 		

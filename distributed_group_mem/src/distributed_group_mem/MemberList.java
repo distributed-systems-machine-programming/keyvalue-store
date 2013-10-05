@@ -32,6 +32,8 @@ public class MemberList implements Serializable {
 		return this.memList.size();
 	}
 
+	public ArrayList<MemberListEntry> getFullList() { return memList;}
+	
 	
 	MemberListEntry findEntry (String MachineID)
 	{
