@@ -67,7 +67,7 @@ public class MemberList implements Serializable {
 		}
 		
 	}
-
+	
 	public void updateList(String remoteMachineID, MemberList incomingMemberList) {
 		
 		int localIndex=0,otherIndex=0;
