@@ -19,7 +19,6 @@ public class Gossiper extends Thread{
 		
 		gossipListenerThread.start();
 		
-		
 	}
 	
 	public void gossip()
