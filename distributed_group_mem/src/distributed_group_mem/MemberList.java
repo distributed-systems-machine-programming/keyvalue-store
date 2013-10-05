@@ -105,6 +105,10 @@ public class MemberList implements Serializable {
 	}
 		
 	}
+
+	public ArrayList<MemberListEntry> getFullList() { return memList;
+		
+	}
 	
 }
 
