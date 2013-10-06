@@ -8,12 +8,22 @@ public class LogWriter {
   static private FileHandler fileTxt;
   static private Formatter formatterTxt;
 
-  static public void setup(String MachineName) throws IOException {
+  static public void setup(String MachineName, String LoggingLevel) throws IOException {
 
     // Get the global logger to configure it
     Logger logger = Logger.getLogger("");
     
-    logger.setLevel(Level.FINE);
+    if(LoggingLevel.equalsIgnoreCase("FINE"))
+    	logger.setLevel(Level.FINE);
+    else if(LoggingLevel.equalsIgnoreCase("INFO"))
+    	logger.setLevel(Level.INFO);
+    else if(LoggingLevel.equalsIgnoreCase("FINER"))
+    	logger.setLevel(Level.FINER);
+    else if(LoggingLevel.equalsIgnoreCase("WARNING"))
+    	logger.setLevel(Level.WARNING);
+    else
+    	logger.setLevel(Level.FINE);
+    
     String logFile = MachineName+".log";
     fileTxt = new FileHandler(logFile);
     

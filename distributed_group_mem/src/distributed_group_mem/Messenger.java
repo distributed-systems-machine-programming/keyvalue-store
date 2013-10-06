@@ -621,9 +621,14 @@ public class Messenger {
 	}
 
 	public void closeSockets() {
+		try{
 		sendSocket.close();
 		receiveSocket.close();
-		
+		}
+		catch (Exception e)
+		{
+			System.out.println("Unable to close the sockets.");
+		}
 	}
 	
 }

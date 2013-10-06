@@ -28,6 +28,7 @@ public class runner {
 	static int FailureCleanUpRate;
 	static int FailureTimeOut;
 	static int GossipSendingRate;
+	static String LoggingLevel;
 	
 	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Exception {
@@ -44,7 +45,7 @@ public class runner {
 		
 		//LOGGER SETUP 
 		try {
-		      LogWriter.setup(shortMachineID);
+		      LogWriter.setup(shortMachineID, LoggingLevel);
 		    } catch (IOException e) {
 		      e.printStackTrace();
 		      throw new RuntimeException("Problems with creating the log files");
@@ -70,11 +71,12 @@ public class runner {
 		
 		String[] temp;
 		boolean firstTimeJoin = true;
+		LOGGER.info(fullMachineID+" # "+"INITIALIZED");
 		while(true)
 		{
 			System.out.println("\nUSAGE: join [contactIP] | leave | exit");
 			System.out.print(">");
-			LOGGER.info(fullMachineID+" # "+"Getting input");
+			
 			input = br.readLine();
 			temp = input.split(" ");
 			if(temp[0].equals("join"))
@@ -90,7 +92,7 @@ public class runner {
 					fullMachineID = getFullMachineID();
 					shortMachineID = getShortMachineID();
 					try {
-					      LogWriter.setup(shortMachineID);
+					      LogWriter.setup(shortMachineID, LoggingLevel);
 					    } catch (IOException e) {
 					      e.printStackTrace();
 					      throw new RuntimeException("Problems with creating the log files");
@@ -108,6 +110,7 @@ public class runner {
 			}
 			else if(temp[0].equals("leave"))
 			{
+				LOGGER.info(fullMachineID+" # "+" LEFT");
 				gos_obj.stopGossip();
 				gos_obj.stopGossipListener();
 				dil.stop();
@@ -116,6 +119,7 @@ public class runner {
 			}
 			else if(temp[0].equalsIgnoreCase("quit") | temp[0].equalsIgnoreCase("exit") )
 			{
+				LOGGER.info(fullMachineID+" # "+" CRASHED");
 				System.exit(0);
 				
 			}
@@ -144,7 +148,7 @@ public class runner {
 				doc.getDocumentElement().normalize();
 			 
 				//System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-			 
+			 System.out.println ("All values are in Milliseconds");
 				NodeList nList = doc.getElementsByTagName("key");
 			 
 			
@@ -207,6 +211,13 @@ public class runner {
 		{
 			//do nothing
 		}	
+		try{
+			if(key.matches("Logging Level"))
+				LoggingLevel = value;
+			}catch (NullPointerException e)
+			{
+				//do nothing
+			}
 	}
 
 	private static String getFullMachineID() throws Exception

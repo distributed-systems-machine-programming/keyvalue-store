@@ -2,6 +2,7 @@
 package distributed_group_mem;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class Gossiper extends Thread{
 	Messenger messenger = null;
@@ -9,6 +10,7 @@ public class Gossiper extends Thread{
 	int port;
 	int GossipSendingRate;
 	String mID;
+	final Logger LOGGER = Logger.getLogger(runner.class.getName());
 	
 	Gossiper(int port, int GossipSendingRate, MemberList localMemList, String mID, int failureCleanUpRate, int failureTimeOut, int lossRate) throws Exception
 	{
@@ -61,6 +63,7 @@ public class Gossiper extends Thread{
 		if(success)
 		{
 			System.out.println("Joined the group successfully.");
+			LOGGER.info(mID+" # "+"JOINED THE GROUP");
 		}
 		else
 		{
