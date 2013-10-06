@@ -488,12 +488,12 @@ public class Messenger {
 				if( timestampDifference >= failureCleanUpRate)  {
 					IDsToDelete.add(deleteMachineID);
 					//System.out.println(deleteMachineID);
-					
+					FaultRateCalculator.notfalseDetections++;
 				}
 				else if( timestampDifference >= failureTimeOut && timestampDifference < failureCleanUpRate )  {
 					IDsToMark.add(deleteMachineID);
 					//System.out.println(deleteMachineID);
-			
+					FaultRateCalculator.notfalseDetections++;
 					
 				}
 			} 
