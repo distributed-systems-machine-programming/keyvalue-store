@@ -1,5 +1,7 @@
 package distributed_group_mem;
 
+
+//SIMPLE CLASS USED TO GET FAULT RATE
 public class FaultRateCalculator {
 
 	public static int falseDetections;

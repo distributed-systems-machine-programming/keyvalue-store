@@ -2,6 +2,8 @@ package distributed_group_mem;
 
 import java.util.logging.Logger;
 
+
+// HEART WHICH RUNS AS A SEPERATE THREAD TO INCREASE THE HEARTBEAT OF THE LOCAL MACHINE
 public class Heart extends Thread{
 	int HeartRate;
 	MemberList memList;

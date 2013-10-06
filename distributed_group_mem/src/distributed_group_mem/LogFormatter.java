@@ -10,9 +10,10 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-//This custom formatter formats parts of a log record to a single line
+//THIS CLASS DEFINES THE FORMAT OF EACH LOG ENTRY
+
 class LogFormatter extends Formatter {
-  // This method is called for every log records
+  
   public String format(LogRecord rec) {
     StringBuffer buf = new StringBuffer(1000);
     buf.append(rec.getLevel());

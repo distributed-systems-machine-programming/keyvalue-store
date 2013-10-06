@@ -4,6 +4,9 @@ package distributed_group_mem;
 import java.io.Serializable;
 import java.util.*;
 
+
+//DATA STRUCTURE AND RELATED METHODS OF THE MEMBERLIST
+
 public class MemberList implements Serializable {
 	
 	private ArrayList<MemberListEntry> memList = new ArrayList<MemberListEntry>();
@@ -88,7 +91,7 @@ public class MemberList implements Serializable {
 				if(this.memList.get(localIndex).getDeletionStatus() == true) {
 					this.memList.get(localIndex).setDeletionStatus(false);
 					FaultRateCalculator.falseDetections++;
-					System.out.println("falseDetections" + Integer.valueOf(FaultRateCalculator.falseDetections));
+					//System.out.println("falseDetections" + Integer.valueOf(FaultRateCalculator.falseDetections));
 				}			
 				this.memList.get(localIndex).updateHeartBeat(incomingMemberList.memList.get(otherIndex).getHeartBeat());
 				this.memList.get(localIndex).setlocalTimeStamp();

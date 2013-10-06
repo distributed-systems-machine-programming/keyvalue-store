@@ -3,6 +3,9 @@ package distributed_group_mem;
 
 import java.io.Serializable;
 
+
+//DATA STRUCTURE AND RELATED METHODS OF AN INDIVIDUAL ENTRY IN THE MEMBERLIST
+
 public class MemberListEntry implements Serializable {
 	private String MachineID;
 	private Long Heartbeat;

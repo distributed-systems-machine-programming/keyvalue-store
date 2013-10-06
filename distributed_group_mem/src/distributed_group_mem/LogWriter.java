@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.logging.*;
 
 
+//THIS CLASS INITIALIZES THE LOG WRITER WITH LOG LEVEL PARAMETER AND ASSIGNS THE OUTPUT FILE NAME
+
 public class LogWriter {
   static private FileHandler fileTxt;
   static private Formatter formatterTxt;

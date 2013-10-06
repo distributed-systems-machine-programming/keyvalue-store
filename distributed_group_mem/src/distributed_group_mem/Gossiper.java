@@ -4,6 +4,10 @@ package distributed_group_mem;
 import java.util.*;
 import java.util.logging.Logger;
 
+
+/*THIS IS THE GOSSIPER CLASS WHICH BASICALLY CREATES THE THREADS TO RUN GOSSIP_LISTENER AND GOSSIP. 
+ * ALL THE FUNCTIONALITY TO LISTEN AND SEND THE GOSSIP ARE WRITTEN IN THE MESSENGER CLASS
+ */
 public class Gossiper extends Thread{
 	Messenger messenger = null;
 	MemberList localMemList = null;
