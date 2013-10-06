@@ -29,8 +29,11 @@ public class Messenger {
     private int failureCleanUpRate;
     private int failureTimeOut;
     final Logger LOGGER = Logger.getLogger(runner.class.getName());
+    private int lossRate;
+    private int updateMessageCount=0;
+    private int g=0;
     
-	Messenger (int port, MemberList localList, String machineID, int failureCleanUpRate, int failureTimeOut) throws Exception
+	Messenger (int port, MemberList localList, String machineID, int failureCleanUpRate, int failureTimeOut, int lossRate) throws Exception
 	{
 		localMemberList = localList;
 		listenerPort = port;
@@ -462,6 +465,9 @@ public class Messenger {
 	}
 
 	public void sendLocalMemList() {
+		
+		if(g/100 == 0)
+		{
 			failureDetector();
 		  ArrayList<String> ListofSendMachineIDs = getSenderList();
 		  if(ListofSendMachineIDs.size() > 0)
@@ -470,7 +476,14 @@ public class Messenger {
 			  
 			  sendMessage(listofSendMachineIPs, "update");
 		  }
-		
+		  g = (++updateMessageCount%100)*lossRate;
+		}
+		else
+		{
+			g=0;
+			updateMessageCount=0;
+		}
+		  
 	}
 	
 	private void failureDetector() {

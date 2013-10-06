@@ -10,13 +10,13 @@ public class Gossiper extends Thread{
 	int GossipSendingRate;
 	String mID;
 	
-	Gossiper(int port, int GossipSendingRate, MemberList localMemList, String mID, int failureCleanUpRate, int failureTimeOut) throws Exception
+	Gossiper(int port, int GossipSendingRate, MemberList localMemList, String mID, int failureCleanUpRate, int failureTimeOut, int lossRate) throws Exception
 	{
 		this.port = port;
 		this.GossipSendingRate = GossipSendingRate;
 		this.localMemList = localMemList;
 		this.mID = mID;
-		messenger = new Messenger(port, localMemList,mID, failureCleanUpRate, failureTimeOut);
+		messenger = new Messenger(port, localMemList,mID, failureCleanUpRate, failureTimeOut, lossRate);
 	}
 	public void gossip_listener()
 	{

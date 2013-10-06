@@ -61,9 +61,9 @@ public class runner {
 		
 		
 		//INITIALIZE GOSSIP LISTENER
+		int lossRate = Integer.parseInt(args[1]);
 		
-		
-		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut);
+		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate);
 		gos_obj.gossip_listener();
 		if(args[0].equalsIgnoreCase("contact"))
 			gos_obj.gossip();
@@ -97,7 +97,7 @@ public class runner {
 					    }
 					memberList = new MemberList(fullMachineID);
 					dil = new Heart(HeartRate, memberList, fullMachineID);
-					gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut);
+					gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate);
 					gos_obj.gossip_listener();
 					gos_obj.joinRequest(temp[1]);
 					gos_obj.gossip();
