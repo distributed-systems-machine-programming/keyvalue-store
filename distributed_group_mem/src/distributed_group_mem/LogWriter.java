@@ -17,6 +17,9 @@ public class LogWriter {
     String logFile = MachineName+".log";
     fileTxt = new FileHandler(logFile);
     
+    Handler[] allHandles = logger.getHandlers();
+    for (int i=0; i<allHandles.length; i++)
+    	logger.removeHandler(allHandles[i]);
 
     // Create txt Formatter
     //formatterTxt = new SimpleFormatter();

@@ -22,7 +22,7 @@ public class Heart extends Thread{
 	{
 		while(true)
 		{
-			LOGGER.fine(MachineID + " # " + "Membership List" + memList.Print());
+			LOGGER.finer(MachineID + " # " + "Membership List" + memList.Print());
 			localEntry.incrementHeartBeat();
 			try {
 			    Thread.sleep(HeartRate);

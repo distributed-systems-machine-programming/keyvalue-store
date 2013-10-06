@@ -49,7 +49,7 @@ public class MemberListEntry implements Serializable {
 		
 	private Long getCurrentTime()
 	{
-		return  System.currentTimeMillis() / 1000L;
+		return  System.currentTimeMillis();
 		
 	}
 	public void setlocalTimeStamp() {

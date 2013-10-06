@@ -71,8 +71,8 @@ public class runner {
 		boolean firstTimeJoin = true;
 		while(true)
 		{
-			System.out.println("Enter the command.");
-			System.out.println(">");
+			System.out.println("\nUSAGE: join [contactIP] | leave | exit");
+			System.out.print(">");
 			LOGGER.info(fullMachineID+" # "+"Getting input");
 			input = br.readLine();
 			temp = input.split(" ");
@@ -141,7 +141,7 @@ public class runner {
 			 
 				doc.getDocumentElement().normalize();
 			 
-				System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+				//System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
 			 
 				NodeList nList = doc.getElementsByTagName("key");
 			 
@@ -167,8 +167,8 @@ public class runner {
 	
 	
 	private static void setParamValue(String key, String value) {
-		System.out.println("key : " + key);
-		System.out.println("value : " + value);
+		System.out.println(key + ": "+ value);
+		//System.out.println("value : " + value);
 		//key += '\0';
 		try{
 		if(key.matches("HeartRate"))
@@ -227,7 +227,7 @@ public class runner {
 			    }
 			}
 		
-			long unixTime = System.currentTimeMillis() / 1000L;
+			long unixTime = System.currentTimeMillis();
 			timestamp = Long.toString(unixTime);
 			MachineID = localIP;
 			MachineID += "+";

@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
+import java.util.logging.Logger;
 
 public class Messenger {
 	private final static int BUFFER_SIZE = 1500; ///using 1500 as its the recommended safe size for a UDP packet
@@ -27,7 +28,7 @@ public class Messenger {
     private boolean joinConfirm = false;
     private int failureCleanUpRate;
     private int failureTimeOut;
-  
+    final Logger LOGGER = Logger.getLogger(runner.class.getName());
     
 	Messenger (int port, MemberList localList, String machineID, int failureCleanUpRate, int failureTimeOut) throws Exception
 	{
@@ -212,11 +213,11 @@ public class Messenger {
 				System.arraycopy(receivePacket.getData(), 0, type, 0, 1);
 				System.arraycopy(receivePacket.getData(), 1, data, 0, BUFFER_SIZE-1);
 		      String sType = new String(type);
-				System.out.println(sType);
+				//System.out.println(sType);
 		      MemberList remoteData = getMemberListFromBytes(data);
-		      System.out.println(remoteData.Print());
+		      //System.out.println(remoteData.Print());
 		      String remoteMachineID = remoteData.getFullList().get(0).getMachineID();
-		      System.out.println(remoteMachineID);
+		     // System.out.println(remoteMachineID);
 		      
 		      if(sType.equals("j"))
 		      {
@@ -225,14 +226,16 @@ public class Messenger {
 					 ArrayList<String> remoteMachineIPBlah =  getMachineIPsfromIDs(blah);
 			      write.lock();
 				  try {
-					  System.out.println("Before Add");
+					 // System.out.println("Before Add");
 					  localMemberList.addEntry(remoteMachineID, remoteData);
-					  System.out.println("After Add"); 
+					  LOGGER.info(localMachineID + " # " + remoteMachineID + " added to the group.");
+					  LOGGER.fine(localMachineID + " # " + "Membership List after adding "+ remoteMachineID + ":" + localMemberList.Print());
+					 // System.out.println("After Add"); 
 				  } finally {
 				    write.unlock();
 				  
 				    sendMessage(remoteMachineIPBlah, "update");
-				    System.out.println("Got some issues in trying to add to the membership list");
+				    //System.out.println("Got some issues in trying to add to the membership list");
 				  }
 				  
 			  }
@@ -240,12 +243,15 @@ public class Messenger {
 		      {
 		    	  write.lock();
 				  try {
+					  LOGGER.info(localMachineID + " # " + remoteMachineID + " has sent an update request.");
+					  LOGGER.fine(localMachineID + " # " + "Membership List before update:" + localMemberList.Print());
 					  localMemberList.updateList(remoteMachineID, remoteData);
-						 
+					  
+					  LOGGER.fine(localMachineID + " # " + "Membership List after update:" + localMemberList.Print());	 
 				  } finally {
 				    write.unlock();
 				      
-				    System.out.println("Got some issues in trying to update the membership list");
+				   // System.out.println("Got some issues in trying to update the membership list");
 				  }
 		      }
 		      else if(sType.equals("l"))
@@ -253,11 +259,12 @@ public class Messenger {
 		    	  write.lock();
 				  try {
 					  localMemberList.removeEntry(remoteMachineID);
-						 
+					  LOGGER.info(localMachineID + " # " + remoteMachineID + " has left the group.");
+					  LOGGER.fine(localMachineID + " # " + "Membership List after removing "+ remoteMachineID + ":" + localMemberList.Print());
 				  } finally {
 				    write.unlock();
 				      
-				    System.out.println("Got some issues in trying to update the membership list");
+				   // System.out.println("Got some issues in trying to update the membership list");
 				  }
 		      }
 		      
@@ -277,7 +284,7 @@ public class Messenger {
 		byte[] sendMessage = generateMessage(localMemberList);	
 		//ArrayList<byte[]> UDPreadymessages = generateUDPreadyMessage(sendMessage, messageType);
 		ArrayList<byte[]> UDPreadymessages = addHeader(sendMessage, messageType);
-		send(UDPreadymessages, listofSendMachineIPs);
+		send(UDPreadymessages, listofSendMachineIPs, messageType);
 		//send (sendMessage, listofSendMachineIPs);
 		//addHeader(sendMessage, "join");
 		//addHeader(sendMessage, "update");
@@ -294,20 +301,20 @@ public class Messenger {
 		{
 			cType = "u";
 			bType = cType.getBytes();
-			System.out.println(String.valueOf(bType.length));
+			//System.out.println(String.valueOf(bType.length));
 			
 		}
 		if(messageType.equals("leave"))
 		{
 			cType = "l";
 			bType = cType.getBytes();
-			System.out.println(String.valueOf(bType.length));
+			//System.out.println(String.valueOf(bType.length));
 		}
 		else if(messageType.equals("join"))
 		{
 			cType = "j";
 			bType = cType.getBytes();
-			System.out.println(String.valueOf(bType.length));
+			//System.out.println(String.valueOf(bType.length));
 		}
 		byte[] c = new byte[bType.length + sendMessage.length];
 		System.arraycopy(bType, 0, c, 0, bType.length);
@@ -367,7 +374,7 @@ public class Messenger {
 		    }
 		  	finally {
 		  		read.unlock();
-		  		System.out.println("Got some issues in trying to read the membership list");
+		  		//System.out.println("Got some issues in trying to read the membership list");
 		  	}
 		return tempData;
 	}
@@ -423,7 +430,7 @@ public class Messenger {
 		return allPackets;
 	}
 
-	private void send(ArrayList<byte[]> uDPreadymessages,ArrayList<String> listofSendMachineIPs) 
+	private void send(ArrayList<byte[]> uDPreadymessages,ArrayList<String> listofSendMachineIPs, String messageType) 
 	{
 		for(int i=0; i<listofSendMachineIPs.size(); i++)
 		{
@@ -434,6 +441,7 @@ public class Messenger {
 						sendData = uDPreadymessages.get(j);
 						DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, sendAddress, listenerPort);
 						sendSocket.send(sendPacket);
+						LOGGER.info(localMachineID + " # " + "Sent " + messageType + " request to " + listofSendMachineIPs.get(i));
 					}
 					
 			}catch(UnknownHostException r)
@@ -474,18 +482,21 @@ public class Messenger {
 				Long timestampDifference = this.getCurrentTime() - this.getMessengerMemberList().getFullList().get(i).getLocalTimeStamp();
 				if( timestampDifference >= failureCleanUpRate)  {
 					this.getMessengerMemberList().getFullList().remove(i);
-					System.out.println(deleteMachineID);
-					//Log the Entry.
+					//System.out.println(deleteMachineID);
+					LOGGER.info(localMachineID + " # " + deleteMachineID + " has been marked for deletion.");
+					  LOGGER.fine(localMachineID + " # " + "Membership List : " +  localMemberList.Print());
 				}
 				else if( timestampDifference >= failureTimeOut && timestampDifference < failureCleanUpRate )  {
 					this.getMessengerMemberList().getFullList().get(i).setDeletionStatus(true);
-					System.out.println(deleteMachineID);
-					//Log the Entry
+					//System.out.println(deleteMachineID);
+					LOGGER.warning(localMachineID + " # " + deleteMachineID + " has failed.");
+					LOGGER.info(localMachineID + " # " + deleteMachineID + " has been removed from the Membership List.");
+					  LOGGER.fine(localMachineID + " # " + "Membership List : " +  localMemberList.Print());
 				}
 			} 
 		}finally {
 		    read.unlock();
-		    System.out.println("Got some issues in trying to delete the membership list");
+		    //System.out.println("Got some issues in trying to delete the membership list");
 		  }
 
 	}
@@ -507,7 +518,7 @@ public class Messenger {
 				
 		  } finally {
 		    read.unlock();
-		    System.out.println("Got some issues in trying to read the membership list");
+		    //System.out.println("Got some issues in trying to read the membership list");
 		  }
 		  if(count < 2 && count > 0)
 		  {
@@ -566,7 +577,7 @@ public class Messenger {
 	}
 	private Long getCurrentTime()
 	{
-		return  System.currentTimeMillis() / 1000L;
+		return  System.currentTimeMillis();
 		
 	}
 	
