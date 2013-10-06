@@ -68,12 +68,15 @@ public class Gossiper extends Thread{
 		}
 		
 	}
+	@SuppressWarnings("deprecation")
 	public void stopGossip() {
-		gossipThread.interrupt();
+		gossipThread.stop();
 		
 	}
+	@SuppressWarnings("deprecation")
 	public void stopGossipListener() {
-		gossipListenerThread.interrupt();
+		messenger.closeSockets();
+		gossipListenerThread.stop();
 		
 	}
 	public void leaveRequest() {

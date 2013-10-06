@@ -23,7 +23,7 @@ public class Messenger {
     private MessageStore ms = null;
     private int listenerPort;
     private byte[] newMessage;
-    private int messageCount = 1;
+    private int messageCount = 0;
     private String localMachineID;
     private boolean joinConfirm = false;
     private int failureCleanUpRate;
@@ -441,6 +441,9 @@ public class Messenger {
 						sendData = uDPreadymessages.get(j);
 						DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, sendAddress, listenerPort);
 						sendSocket.send(sendPacket);
+						messageCount++;
+						System.out.println("SizeofRequest" + String.valueOf(sendData.length));
+						System.out.println("MessageCount" + String.valueOf(messageCount));
 						LOGGER.info(localMachineID + " # " + "Sent " + messageType + " request to " + listofSendMachineIPs.get(i));
 					}
 					
@@ -473,7 +476,9 @@ public class Messenger {
 	private void failureDetector() {
 
 		// TODO Aswin's code for Failure Detector
-
+		ArrayList<String> IDsToMark = new ArrayList<String>();
+		ArrayList<String> IDsToDelete = new ArrayList<String>();
+		
 		read.lock();
 		try{
 			int tableSize = this.getMessengerMemberList().getFullList().size();
@@ -481,23 +486,40 @@ public class Messenger {
 				String deleteMachineID = this.getMessengerMemberList().getFullList().get(i).getMachineID();
 				Long timestampDifference = this.getCurrentTime() - this.getMessengerMemberList().getFullList().get(i).getLocalTimeStamp();
 				if( timestampDifference >= failureCleanUpRate)  {
-					this.getMessengerMemberList().getFullList().remove(i);
+					IDsToDelete.add(deleteMachineID);
 					//System.out.println(deleteMachineID);
-					LOGGER.info(localMachineID + " # " + deleteMachineID + " has been marked for deletion.");
-					  LOGGER.fine(localMachineID + " # " + "Membership List : " +  localMemberList.Print());
+					
 				}
 				else if( timestampDifference >= failureTimeOut && timestampDifference < failureCleanUpRate )  {
-					this.getMessengerMemberList().getFullList().get(i).setDeletionStatus(true);
+					IDsToMark.add(deleteMachineID);
 					//System.out.println(deleteMachineID);
-					LOGGER.warning(localMachineID + " # " + deleteMachineID + " has failed.");
-					LOGGER.info(localMachineID + " # " + deleteMachineID + " has been removed from the Membership List.");
-					  LOGGER.fine(localMachineID + " # " + "Membership List : " +  localMemberList.Print());
+			
+					
 				}
 			} 
+			
 		}finally {
 		    read.unlock();
 		    //System.out.println("Got some issues in trying to delete the membership list");
 		  }
+		write.lock();
+		try{
+			for (int i=0; i<IDsToMark.size(); i++)
+			{
+				this.getMessengerMemberList().findEntry(IDsToMark.get(i)).setDeletionStatus(true);
+				LOGGER.info(localMachineID + " # " + IDsToMark.get(i) + " has been marked for deletion.");
+				  LOGGER.fine(localMachineID + " # " + "Membership List : " +  localMemberList.Print());
+			}
+				for (int j=0; j<IDsToDelete.size(); j++)
+			{
+				this.getMessengerMemberList().deleteEntry(IDsToDelete.get(j));
+			LOGGER.warning(localMachineID + " # " + IDsToDelete.get(j) + " has failed.");
+			LOGGER.info(localMachineID + " # " + IDsToDelete.get(j) + " has been removed from the Membership List.");
+			  LOGGER.fine(localMachineID + " # " + "Membership List : " +  localMemberList.Print());
+			}
+		}finally{
+			write.unlock();
+		}
 
 	}
 	private ArrayList<String> getSenderList() {
@@ -544,7 +566,7 @@ public class Messenger {
 		sendMessage(ListofIPs, "join");
 		int i=0;
 		boolean flag=false;
-		while(!joinConfirm && i<1000)
+		while(!joinConfirm && i<10)
 		{
 		try{	
 			Thread.sleep(100);
@@ -578,6 +600,12 @@ public class Messenger {
 	private Long getCurrentTime()
 	{
 		return  System.currentTimeMillis();
+		
+	}
+
+	public void closeSockets() {
+		sendSocket.close();
+		receiveSocket.close();
 		
 	}
 	

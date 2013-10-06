@@ -29,6 +29,7 @@ public class runner {
 	static int FailureTimeOut;
 	static int GossipSendingRate;
 	
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String input;
@@ -107,10 +108,11 @@ public class runner {
 			}
 			else if(temp[0].equals("leave"))
 			{
-				gos_obj.leaveRequest();
 				gos_obj.stopGossip();
 				gos_obj.stopGossipListener();
-				dil.interrupt();
+				dil.stop();
+				gos_obj.leaveRequest();
+				
 			}
 			else if(temp[0].equalsIgnoreCase("quit") | temp[0].equalsIgnoreCase("exit") )
 			{

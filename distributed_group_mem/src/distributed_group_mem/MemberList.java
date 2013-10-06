@@ -49,6 +49,16 @@ public class MemberList implements Serializable {
 		for (int i = 0; i < this.memList.size(); i++) {
 			if (this.memList.get(i).getMachineID().equals(remoteMachineID))
 			{
+				this.memList.get(i).setDeletionStatus(true);
+			}
+		}
+		
+	}
+	public void deleteEntry(String remoteMachineID) {
+		
+		for (int i = 0; i < this.memList.size(); i++) {
+			if (this.memList.get(i).getMachineID().equals(remoteMachineID))
+			{
 				this.memList.remove(i);
 			}
 		}
@@ -100,9 +110,10 @@ public class MemberList implements Serializable {
 	public String Print()
 	{
 		String printString = new String();
+		
 		for (int i=0; i< memList.size(); i++)
 		{
-			printString += "\n";
+			printString += "\nFINE : ";
 			printString += memList.get(i).getInline();
 		}
 		return printString;
