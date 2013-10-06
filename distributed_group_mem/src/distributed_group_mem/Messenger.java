@@ -31,12 +31,13 @@ public class Messenger {
     final Logger LOGGER = Logger.getLogger(runner.class.getName());
     private int lossRate;
     private int updateMessageCount=0;
-    private int g=0;
+    private int g;
     
 	Messenger (int port, MemberList localList, String machineID, int failureCleanUpRate, int failureTimeOut, int lossRate) throws Exception
 	{
 		localMemberList = localList;
 		listenerPort = port;
+		this.lossRate = lossRate;
 		try{
 			sendSocket = new DatagramSocket();
 			receiveSocket = new DatagramSocket(listenerPort);
@@ -445,8 +446,8 @@ public class Messenger {
 						DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, sendAddress, listenerPort);
 						sendSocket.send(sendPacket);
 						messageCount++;
-						System.out.println("SizeofRequest" + String.valueOf(sendData.length));
-						System.out.println("MessageCount" + String.valueOf(messageCount));
+						//System.out.println("SizeofRequest" + String.valueOf(sendData.length));
+						//System.out.println("MessageCount" + String.valueOf(messageCount));
 						LOGGER.info(localMachineID + " # " + "Sent " + messageType + " request to " + listofSendMachineIPs.get(i));
 					}
 					
@@ -465,6 +466,8 @@ public class Messenger {
 	}
 
 	public void sendLocalMemList() {
+		
+
 		
 		if(g/100 == 0)
 		{
@@ -502,12 +505,13 @@ public class Messenger {
 					IDsToDelete.add(deleteMachineID);
 					//System.out.println(deleteMachineID);
 					FaultRateCalculator.notfalseDetections++;
+					System.out.println("notfalseDetections" + Integer.valueOf(FaultRateCalculator.notfalseDetections));
 				}
 				else if( timestampDifference >= failureTimeOut && timestampDifference < failureCleanUpRate )  {
 					IDsToMark.add(deleteMachineID);
 					//System.out.println(deleteMachineID);
 					FaultRateCalculator.notfalseDetections++;
-					
+					System.out.println("notfalseDetections" + Integer.valueOf(FaultRateCalculator.notfalseDetections));
 				}
 			} 
 			

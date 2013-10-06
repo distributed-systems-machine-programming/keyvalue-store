@@ -87,6 +87,8 @@ public class MemberList implements Serializable {
 			{
 				if(this.memList.get(localIndex).getDeletionStatus() == true) {
 					this.memList.get(localIndex).setDeletionStatus(false);
+					FaultRateCalculator.falseDetections++;
+					System.out.println("falseDetections" + Integer.valueOf(FaultRateCalculator.falseDetections));
 				}			
 				this.memList.get(localIndex).updateHeartBeat(incomingMemberList.memList.get(otherIndex).getHeartBeat());
 				this.memList.get(localIndex).setlocalTimeStamp();

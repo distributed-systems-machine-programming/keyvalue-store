@@ -6,6 +6,8 @@ public class FaultRateCalculator {
 	public static int notfalseDetections;
 
 	public int getfaultRatePositiveValue () {
+		System.out.println("falseDetections:" + String.valueOf(falseDetections));
+		System.out.println("totalDetections:" + String.valueOf(falseDetections+notfalseDetections));
 		return (falseDetections/(falseDetections+notfalseDetections));
 	}
 }
