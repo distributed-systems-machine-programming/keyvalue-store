@@ -451,12 +451,14 @@ public class Messenger {
 	}
 
 	public void sendLocalMemList() {
-		
+			failureDetector();
 		  ArrayList<String> ListofSendMachineIDs = getSenderList();
-		  ArrayList<String> listofSendMachineIPs = getMachineIPsfromIDs(ListofSendMachineIDs);
-		  failureDetector();
-		  sendMessage(listofSendMachineIPs, "update");
-		
+		  if(ListofSendMachineIDs.size() > 0)
+		  {	  
+			  ArrayList<String> listofSendMachineIPs = getMachineIPsfromIDs(ListofSendMachineIDs);
+			  
+			  sendMessage(listofSendMachineIPs, "update");
+		  }
 		
 	}
 	
@@ -489,14 +491,14 @@ public class Messenger {
 	}
 	private ArrayList<String> getSenderList() {
 		int count=0;
-		
+		int noOfSenders=0;
 		ArrayList<String> allIPs = new ArrayList<String>();
 		ArrayList<String> senderIPs = new ArrayList<String>();
 		read.lock();
 		  try {
 				for (int i=0; i<localMemberList.getSize(); i++)
 				{
-					if(localMemberList.getFullList().get(i).isAlive())
+					if(localMemberList.getFullList().get(i).isAlive() && !localMemberList.getFullList().get(i).getMachineID().equals(localMachineID))
 						{
 							count++;
 							allIPs.add(localMemberList.getFullList().get(i).getMachineIP());
@@ -507,7 +509,14 @@ public class Messenger {
 		    read.unlock();
 		    System.out.println("Got some issues in trying to read the membership list");
 		  }
-		  int noOfSenders = count/2;
+		  if(count < 2 && count > 0)
+		  {
+			  noOfSenders = 1;
+		  }
+		  else if(count >= 2)
+		  {
+			   noOfSenders = count/2;
+		  }
 		  Collections.shuffle(allIPs);
 		  for(int i=0; i<noOfSenders; i++)
 			  senderIPs.add(allIPs.get(i));
@@ -545,9 +554,12 @@ public class Messenger {
 
 	public void sendLeaveRequest() {
 		ArrayList<String> ListofMachineIDs = getSenderList();
-		ArrayList<String> listofSendMachineIPs = getMachineIPsfromIDs(ListofMachineIDs);
-		sendMessage(listofSendMachineIPs, "leave");
-		
+		if(ListofMachineIDs.size() > 0)
+		{
+			
+			ArrayList<String> listofSendMachineIPs = getMachineIPsfromIDs(ListofMachineIDs);
+			sendMessage(listofSendMachineIPs, "leave");
+		}
 	}
 	public MemberList getMessengerMemberList() {
 		return localMemberList;

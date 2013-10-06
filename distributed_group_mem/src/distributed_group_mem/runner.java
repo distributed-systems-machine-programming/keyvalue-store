@@ -64,6 +64,8 @@ public class runner {
 		
 		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut);
 		gos_obj.gossip_listener();
+		if(args[0].equalsIgnoreCase("contact"))
+			gos_obj.gossip();
 		
 		String[] temp;
 		boolean firstTimeJoin = true;

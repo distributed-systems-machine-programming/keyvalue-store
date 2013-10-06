@@ -14,20 +14,7 @@ public class MemberList implements Serializable {
 		
 	}
 
-	public void incrementHeartBeat(String MachineID) {
-		int localMemberListsize = this.memList.size();
-		int localIndex=0;
-		for (int i = 0; i < localMemberListsize; i++ ) { // if localIndex == -1, entry not found in the local gossip table
-			if (this.memList.get(i).getMachineID().equals(MachineID))
-				localIndex = i;
-			else
-				localIndex = -1;
-		}
-		
-		if (localIndex>=0)
-			this.memList.get(localIndex).incrementHeartBeat();
-		
-	}
+	
 	public int getSize() {
 		return this.memList.size();
 	}
@@ -70,7 +57,7 @@ public class MemberList implements Serializable {
 	
 	public void updateList(String remoteMachineID, MemberList incomingMemberList) {
 		
-		int localIndex=0,otherIndex=0;
+		int localIndex=-1,otherIndex=0;
 		String currentIP;
 		int localMemberListsize = this.memList.size();
 		int incomingMemberListsize = incomingMemberList.memList.size();
@@ -79,13 +66,15 @@ public class MemberList implements Serializable {
 			currentIP = incomingMemberList.memList.get(otherIndex).getMachineID();
 
 			for (int i = 0; i < localMemberListsize; i++ ) { // if localIndex == -1, entry not found in the local gossip table
-				if (this.memList.get(i).getMachineID().equals(currentIP))
+				if (this.memList.get(i).getMachineID().equals(currentIP)){
 					localIndex = i;
-				else
-					localIndex = -1;
+					break;
+				}
+				
 			}
 
-			if (localIndex >= 0 && incomingMemberList.memList.get(otherIndex).getHeartBeat() > this.memList.get(localIndex).getHeartBeat() && incomingMemberList.memList.get(otherIndex).getDeletionStatus() == false) {
+			if (localIndex >= 0 && incomingMemberList.memList.get(otherIndex).getHeartBeat() > this.memList.get(localIndex).getHeartBeat() && incomingMemberList.memList.get(otherIndex).getDeletionStatus() == false)
+			{
 				if(this.memList.get(localIndex).getDeletionStatus() == true) {
 					this.memList.get(localIndex).setDeletionStatus(false);
 				}			
