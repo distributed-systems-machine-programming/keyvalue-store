@@ -53,7 +53,7 @@ public class runner {
 		//GET M-BIT IDENTIFIER
 		
 		int identifier = getMbitIdentifier(m);
-		int successor;
+		int successor = 0;
 		//LOGGER SETUP 
 		try {
 		      LogWriter.setup(shortMachineID, LoggingLevel);
@@ -75,7 +75,7 @@ public class runner {
 		//INITIALIZE GOSSIP LISTENER
 		int lossRate = Integer.parseInt(args[1]);
 		
-		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate);
+		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate, m);
 		gos_obj.gossip_listener();
 		if(args[0].equalsIgnoreCase("contact"))
 			gos_obj.gossip();
@@ -97,7 +97,7 @@ public class runner {
 					gos_obj.joinRequest(temp[1]);
 					gos_obj.gossip();
 					successor = gos_obj.findSuccessor(identifier);
-					gos_obj.getKeysFromSuccessor();
+					gos_obj.getKeysFromSuccessor(identifier, successor);
 					firstTimeJoin = false;
 				}
 				else
@@ -112,7 +112,7 @@ public class runner {
 					    }
 					memberList = new MemberList(fullMachineID, identifier);
 					dil = new Heart(HeartRate, memberList, fullMachineID);
-					gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate);
+					gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate, m);
 					gos_obj.gossip_listener();
 					gos_obj.joinRequest(temp[1]);
 					gos_obj.gossip();
@@ -124,6 +124,7 @@ public class runner {
 			else if(temp[0].equals("leave"))
 			{
 				LOGGER.info(fullMachineID+" # "+" LEFT");
+				gos_obj.sendKeysToSuccessor(identifier, successor);
 				gos_obj.stopGossip();
 				gos_obj.stopGossipListener();
 				dil.stop();

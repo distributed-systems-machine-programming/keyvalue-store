@@ -12,7 +12,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class MapStore {
-	Map<Integer, Value> x = new HashMap<Integer, Value>();
+	TreeMap<Integer, Value> x = new TreeMap<Integer, Value>();
 	
 	MapStore(String xmlFile)	//this is for testing
 	{

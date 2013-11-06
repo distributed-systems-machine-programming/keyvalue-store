@@ -14,15 +14,17 @@ public class Gossiper extends Thread{
 	int port;
 	int GossipSendingRate;
 	String mID;
+	int m;
 	final Logger LOGGER = Logger.getLogger(runner.class.getName());
 	
-	Gossiper(int port, int GossipSendingRate, MemberList localMemList, String mID, int failureCleanUpRate, int failureTimeOut, int lossRate) throws Exception
+	Gossiper(int port, int GossipSendingRate, MemberList localMemList, String mID, int failureCleanUpRate, int failureTimeOut, int lossRate, int m) throws Exception
 	{
 		this.port = port;
 		this.GossipSendingRate = GossipSendingRate;
 		this.localMemList = localMemList;
 		this.mID = mID;
 		messenger = new Messenger(port, localMemList,mID, failureCleanUpRate, failureTimeOut, lossRate);
+		this.m = m;
 	}
 	public void gossip_listener()
 	{
@@ -92,26 +94,34 @@ public class Gossiper extends Thread{
 	}
 	public int findSuccessor(int identifier) {
 		int successor=0;
-		int gap=2000000;
-		int index = -1;
-		for(int i=0; i< localMemList.getSize(); i++)
+		int[] allIdentifiers = new int[localMemList.getSize()+1];
+		int i=0;
+		for(; i< localMemList.getSize(); i++)
 		{
-			if(localMemList.getFullList().get(i).getIdentifier()- identifier < gap && localMemList.getFullList().get(i).getIdentifier() - identifier>0)
-			{
-				gap = localMemList.getFullList().get(i).getIdentifier() - identifier;
-				index = i;
-				
-			}
+			allIdentifiers[i] = localMemList.getFullList().get(i).getIdentifier();
+			
 		}
+		allIdentifiers[i] = identifier;
+		Arrays.sort(allIdentifiers);
+		int index = Arrays.binarySearch(allIdentifiers, identifier);
+		int successorIndex;
+		if(index == allIdentifiers.length-1)
+			successorIndex = 0;
+		else
+			successorIndex = index+1;
 		
-		successor = localMemList.getFullList().get(index).getIdentifier();
-		
+		successor = allIdentifiers[successorIndex];
 		return successor;
 		
 	}
-	public void getKeysFromSuccessor() {
-		// TODO Auto-generated method stub
+	public void getKeysFromSuccessor(int identifier, int successor) {
+		messenger.getKeysFromSuccessor(identifier, successor);
 		
+	}
+	
+	public void sendKeysToSuccessor(int identifier, int successor)
+	{
+		messenger.sendKeysToSuccessor(identifier, successor);
 	}
 		
 

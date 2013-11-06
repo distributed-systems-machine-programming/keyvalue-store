@@ -40,6 +40,19 @@ public class MemberList implements Serializable {
 		return blank;
 	}
 	
+	MemberListEntry findEntry (int identifier)
+	{
+		MemberListEntry blank = new MemberListEntry("INVALID");
+		for (int i=0; i<memList.size(); i++)
+		{
+			if (memList.get(i).getIdentifier() == identifier)
+			{
+				return memList.get(i);
+			}
+		}
+		return blank;
+	}
+	
 	public void addEntry(String incomingMachineID, MemberList ml) {
 		
 		this.memList.add(new MemberListEntry(incomingMachineID));

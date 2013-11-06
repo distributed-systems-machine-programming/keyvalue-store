@@ -451,6 +451,47 @@ public class Messenger {
 			System.out.println("Unable to close the sockets.");
 		}
 	}
+
+	public void getKeysFromSuccessor(int identifier, int successor) {
+		sendRangeforKeys(identifier, successor);
+		
+		
+	}
+
 	
+	private void sendRangeforKeys(int identifier, int successor) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void sendKeysToSuccessor(int identifier, int successor) {
+		sendKeyVals(successor);
+		
+	}
+
+	private void sendKeyVals(int receiver /*some sort of key val pairs from the hash map,*/) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private void sendKeyVal(int key, Value value,int receiver) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private void addKeyValToStore(int key, Value value)
+	{
+		// TODO Auto-generated method stub
+	}
+	
+	private void removeKeyValsFromStore(int[] key)
+	{
+		// TODO Auto-generated method stub
+	}
+	
+	private String getIPfromIdentifier(int identifier)
+	{
+		return localMemberList.findEntry(identifier).getMachineIP();
+	}
 }
 

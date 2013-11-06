@@ -1,0 +1,9 @@
+j - join
+u - update
+l - leave
+a - add keys
+f - find keys
+c - change keys
+d - delete keys
+
+k - send 
