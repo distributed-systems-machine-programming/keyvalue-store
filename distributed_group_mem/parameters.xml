@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<parameters>
+   <key id="HeartRate">
+      <value>50</value>
+	</key>
+	<key id="FailureCleanUpRate">
+      <value>1500</value>
+	</key>
+	<key id="FailureTimeOut">
+      <value>500</value>
+	</key>
+	<key id="GossipSendingRate">
+      <value>100</value>
+	</key>
+	<key id="Logging Level">
+      <value>FINE</value>
+	</key>
+</parameters>
+	 
+	  
