@@ -11,6 +11,7 @@ public class MemberListEntry implements Serializable {
 	private Long Heartbeat;
 	private Long localTimeStamp;
 	private boolean markForDeletion;
+	private int identifier;
 	
 	MemberListEntry(String MachineID)
 	{
@@ -18,6 +19,14 @@ public class MemberListEntry implements Serializable {
 		Heartbeat= 0L;
 		localTimeStamp = getCurrentTime();
 		markForDeletion = false;
+	}
+	MemberListEntry(String MachineID, int identifier)
+	{
+		this.MachineID = MachineID;
+		Heartbeat= 0L;
+		localTimeStamp = getCurrentTime();
+		markForDeletion = false;
+		this.identifier = identifier;
 	}
 	public Long getHeartBeat() {return Heartbeat;}
 
@@ -68,7 +77,7 @@ public class MemberListEntry implements Serializable {
 	}
 	
 	public String getInline(){
-		return MachineID + " " + String.valueOf(Heartbeat) + " " + String.valueOf(localTimeStamp)+" " + String.valueOf(markForDeletion);
+		return MachineID + " " + String.valueOf(Heartbeat) + " " + String.valueOf(localTimeStamp)+" " + String.valueOf(markForDeletion)+" "+String.valueOf(identifier);
 	}
 	
 	

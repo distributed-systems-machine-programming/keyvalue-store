@@ -2,7 +2,9 @@ package distributed_group_mem;
 
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.*;
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.logging.*;
 
@@ -12,6 +14,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
+
+import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
+
 import java.io.File;
 
 public class runner {
@@ -42,6 +47,12 @@ public class runner {
 		//ASSIGN MACHINE IDs
 		String fullMachineID = getFullMachineID();
 		String shortMachineID = getShortMachineID();
+		
+		int m=17;
+		
+		//GET M-BIT IDENTIFIER
+		
+		int identifier = getMbitIdentifier(m);
 		
 		//LOGGER SETUP 
 		try {
@@ -74,7 +85,7 @@ public class runner {
 		LOGGER.info(fullMachineID+" # "+"INITIALIZED");
 		while(true)
 		{
-			System.out.println("\nUSAGE: join [contactIP] | leave | exit");
+			System.out.println("\nUSAGE: join [contactIP] | leave ");
 			System.out.print(">");
 			
 			input = br.readLine();
@@ -136,6 +147,83 @@ public class runner {
 		
 	}
 	
+	private static int getMbitIdentifier(int M) {
+		String localIP=null;
+		String hexHashOut = null;
+		int identifier=0;
+		try{
+			Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+			while (interfaces.hasMoreElements()){
+			    NetworkInterface current = interfaces.nextElement();
+			    //System.out.println(current);
+			    if (!current.isUp() || current.isLoopback() || current.isVirtual()) continue;
+			    Enumeration<InetAddress> addresses = current.getInetAddresses();
+			    while (addresses.hasMoreElements()){
+			        InetAddress current_addr = addresses.nextElement();
+			        if (current_addr.isLoopbackAddress()) continue;
+			        if (current_addr instanceof Inet4Address)
+			        	  localIP = current_addr.getHostAddress();
+			        
+			    }
+			}
+		
+				
+		}
+		catch (SocketException e)
+		{
+			System.out.println("Unable to get Local Host Address");
+			System.exit(1);
+		}
+		
+		
+		
+		try {
+	        MessageDigest digest = MessageDigest.getInstance("SHA1");
+	        digest.update(localIP.getBytes());
+	         hexHashOut = getHex (digest.digest());
+	         System.out.println("Hex Hash Out: " + hexHashOut);
+	        
+
+	    } catch (Exception e) {
+	        System.out.println("SHA1 not implemented in this system");
+	    }
+		
+		try{
+			BigInteger intHashOut = new BigInteger(hexHashOut,16);
+			double divisor = Math.pow(2, M);
+	        long temp1 = (long) divisor;
+	        //BigInteger bigTemp1 = null;
+	        //BigInteger.valueOf(temp1);
+	     // Convert Long to String.
+	        String stringVar =Long.toString(temp1);
+
+	        // Convert to BigInteger. The BigInteger(byte[] val) expects a binary representation of 
+	        // the number, whereas the BigInteger(string val) expects a decimal representation.
+	        BigInteger bigTemp1 = new BigInteger( stringVar );
+
+	        // See if the conversion worked. But the output from this step is not
+	        // anything like the original value I put into longVar
+	        System.out.println( bigTemp1.intValue() );
+	        
+	        
+	       BigInteger BigIdentifier = intHashOut.mod(bigTemp1);
+	       identifier = BigIdentifier.intValue();
+	        
+	        System.out.println("int Hash Out: " + intHashOut);
+	        System.out.println("divisor: " + String.valueOf(divisor));
+	        System.out.println("temp1: " + temp1);
+	        System.out.println("bigTemp1: " + bigTemp1);
+	        System.out.println("BigIdentifier: " + BigIdentifier);
+	        System.out.println("identifier: " + identifier);
+		}
+		catch (Exception e)
+		{
+			System.out.println("Something");
+		}
+		return identifier;
+		
+	}
+
 	private static void initParams()
 	{
 		 try {
@@ -289,7 +377,18 @@ public class runner {
 		return MachineID;
 	}
 	
-	
+	 static final String HEXES = "0123456789ABCDEF";
+	  public static String getHex( byte [] raw ) {
+	    if ( raw == null ) {
+	      return null;
+	    }
+	    final StringBuilder hex = new StringBuilder( 2 * raw.length );
+	    for ( final byte b : raw ) {
+	      hex.append(HEXES.charAt((b & 0xF0) >> 4))
+	         .append(HEXES.charAt((b & 0x0F)));
+	    }
+	    return hex.toString();
+	  }
 	
 	
 }

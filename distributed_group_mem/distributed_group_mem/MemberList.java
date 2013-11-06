@@ -16,7 +16,11 @@ public class MemberList implements Serializable {
 		memList.add(new MemberListEntry (localMachineID));
 		
 	}
-
+	MemberList (String localMachineID, int identifier)
+	{
+		memList.add(new MemberListEntry (localMachineID, identifier));
+		
+	}
 	
 	public int getSize() {
 		return this.memList.size();
