@@ -96,6 +96,7 @@ public class Messenger {
 		      String sType = new String(type);
 				//System.out.println(sType);
 		      MemberList remoteData = getMemberListFromBytes(data);
+		      System.out.println(remoteData.Print());
 		      //System.out.println(remoteData.Print());
 		      String remoteMachineID = remoteData.getFullList().get(0).getMachineID();
 		     // System.out.println(remoteMachineID);

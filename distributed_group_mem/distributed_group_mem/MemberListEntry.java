@@ -79,6 +79,14 @@ public class MemberListEntry implements Serializable {
 	public String getInline(){
 		return MachineID + " " + String.valueOf(Heartbeat) + " " + String.valueOf(localTimeStamp)+" " + String.valueOf(markForDeletion)+" "+String.valueOf(identifier);
 	}
+	public int getIdentifier() {
+		// TODO Auto-generated method stub
+		return identifier;
+	}
+	public void setIdentifier(int identifier2) {
+		identifier = identifier2;
+		
+	}
 	
 	
 }

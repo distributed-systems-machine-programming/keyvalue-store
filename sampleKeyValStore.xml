@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<parameters>
+   <key id="489733">
+      <ID>50</ID>
+      <name>HP</name>
+	</key>
+   <key id="1211144">
+      <ID>99</ID>
+      <name>RESS</name>
+	</key>
+   <key id="45">
+      <ID>45</ID>
+      <name>Comapaq</name>
+	</key>
+   <key id="898733">
+      <ID>50</ID>
+      <name>Apple</name>
+	</key>
+   <key id="67646">
+      <ID>22468</ID>
+      <name>Google</name>
+	</key>
+</parameters>
+	 
+	  

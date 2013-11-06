@@ -90,6 +90,29 @@ public class Gossiper extends Thread{
 		messenger.sendLeaveRequest();
 		
 	}
+	public int findSuccessor(int identifier) {
+		int successor=0;
+		int gap=2000000;
+		int index = -1;
+		for(int i=0; i< localMemList.getSize(); i++)
+		{
+			if(localMemList.getFullList().get(i).getIdentifier()- identifier < gap && localMemList.getFullList().get(i).getIdentifier() - identifier>0)
+			{
+				gap = localMemList.getFullList().get(i).getIdentifier() - identifier;
+				index = i;
+				
+			}
+		}
+		
+		successor = localMemList.getFullList().get(index).getIdentifier();
+		
+		return successor;
+		
+	}
+	public void getKeysFromSuccessor() {
+		// TODO Auto-generated method stub
+		
+	}
 		
 
 }

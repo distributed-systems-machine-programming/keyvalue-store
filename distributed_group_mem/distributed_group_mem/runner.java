@@ -53,7 +53,7 @@ public class runner {
 		//GET M-BIT IDENTIFIER
 		
 		int identifier = getMbitIdentifier(m);
-		
+		int successor;
 		//LOGGER SETUP 
 		try {
 		      LogWriter.setup(shortMachineID, LoggingLevel);
@@ -64,7 +64,7 @@ public class runner {
 		final Logger LOGGER = Logger.getLogger(runner.class.getName());
 		
 		//CREATE MEMBERSHIP LIST
-		MemberList memberList = new MemberList(fullMachineID);
+		MemberList memberList = new MemberList(fullMachineID, identifier);
 		
 		//INITIALIZE HEART
 		
@@ -96,6 +96,8 @@ public class runner {
 				{
 					gos_obj.joinRequest(temp[1]);
 					gos_obj.gossip();
+					successor = gos_obj.findSuccessor(identifier);
+					gos_obj.getKeysFromSuccessor();
 					firstTimeJoin = false;
 				}
 				else
@@ -108,7 +110,7 @@ public class runner {
 					      e.printStackTrace();
 					      throw new RuntimeException("Problems with creating the log files");
 					    }
-					memberList = new MemberList(fullMachineID);
+					memberList = new MemberList(fullMachineID, identifier);
 					dil = new Heart(HeartRate, memberList, fullMachineID);
 					gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate);
 					gos_obj.gossip_listener();

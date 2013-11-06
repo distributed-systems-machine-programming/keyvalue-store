@@ -47,7 +47,8 @@ public class MemberList implements Serializable {
 		this.memList.get(currentSize).setMachineID(incomingMachineID);
 		this.memList.get(currentSize).setHeartBeat(ml.memList.get(0).getHeartBeat());
 		this.memList.get(currentSize).setlocalTimeStamp();  // To be confirmed.
-		this.memList.get(currentSize).setDeletionStatus(false);	
+		this.memList.get(currentSize).setDeletionStatus(false);
+		this.memList.get(currentSize).setIdentifier(ml.memList.get(0).getIdentifier());	
 		
 	}
 
@@ -108,7 +109,7 @@ public class MemberList implements Serializable {
 				this.memList.get(currentSize).setHeartBeat(incomingMemberList.memList.get(otherIndex).getHeartBeat());
 				this.memList.get(currentSize).setlocalTimeStamp();  // To be confirmed.
 				this.memList.get(currentSize).setDeletionStatus(false);	
-				
+				this.memList.get(currentSize).setIdentifier(incomingMemberList.memList.get(otherIndex).getIdentifier());
 			}
 	}
 		
