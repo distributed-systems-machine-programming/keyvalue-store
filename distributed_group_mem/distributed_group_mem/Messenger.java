@@ -28,6 +28,7 @@ public class Messenger {
     private byte[] tempData = new byte[BUFFER_SIZE];
     private int sendPort;
     private int listenerPort;
+    private int keyvalPort;
     private byte[] newMessage;
     private int messageCount = 0;
     private String localMachineID;
@@ -38,8 +39,11 @@ public class Messenger {
     private int lossRate;
     private int updateMessageCount=0;
     private int g;
+    private int localIdentifier;
+    private int localSuccessor;
+    private MapStore localMap;
     
-	Messenger (int port, MemberList localList, String machineID, int failureCleanUpRate, int failureTimeOut, int lossRate) throws Exception
+	Messenger (int port, MemberList localList, String machineID, int failureCleanUpRate, int failureTimeOut, int lossRate, int identifier, MapStore map, int keyvalPort) throws Exception
 	{
 		localMemberList = localList;
 		listenerPort = port;
@@ -50,6 +54,9 @@ public class Messenger {
 			localMachineID = machineID;
 			this.failureCleanUpRate =failureCleanUpRate; 
 			this.failureTimeOut = failureTimeOut;
+			localIdentifier = identifier;
+			localMap = map;
+			this.keyvalPort = keyvalPort;
 			
 		}
 		catch (SocketException e)
@@ -96,7 +103,7 @@ public class Messenger {
 		      String sType = new String(type);
 				//System.out.println(sType);
 		      MemberList remoteData = getMemberListFromBytes(data);
-		      System.out.println(remoteData.Print());
+		      //System.out.println(remoteData.Print());
 		      //System.out.println(remoteData.Print());
 		      String remoteMachineID = remoteData.getFullList().get(0).getMachineID();
 		     // System.out.println(remoteMachineID);
@@ -119,7 +126,7 @@ public class Messenger {
 				    sendMessage(remoteMachineIPBlah, "update");
 				    //System.out.println("Got some issues in trying to add to the membership list");
 				  }
-				  
+				  findSuccessor(localIdentifier);
 			  }
 		      else if(sType.equals("u"))
 		      {
@@ -135,6 +142,7 @@ public class Messenger {
 				      
 				   // System.out.println("Got some issues in trying to update the membership list");
 				  }
+				  findSuccessor(localIdentifier);
 		      }
 		      else if(sType.equals("l"))
 		      {
@@ -452,9 +460,29 @@ public class Messenger {
 		}
 	}
 
-	public void getKeysFromSuccessor(int identifier, int successor) {
-		sendRangeforKeys(identifier, successor);
+	public void getKeysFromSuccessor()  {
 		
+		 String sentence;
+		  String modifiedSentence;
+		  BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
+		  Socket clientSocket;
+		try {
+			clientSocket = new Socket(getIPfromIdentifier(localSuccessor), keyvalPort);
+		
+		  DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		  BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		  sentence = "Testing keyval connection from " + String.valueOf(localIdentifier)+ " to " +String.valueOf(localSuccessor);
+		  outToServer.writeBytes(sentence + '\n');
+		  modifiedSentence = inFromServer.readLine();
+		  System.out.println("FROM SERVER: " + modifiedSentence);
+		  clientSocket.close();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -464,12 +492,13 @@ public class Messenger {
 		
 	}
 
-	public void sendKeysToSuccessor(int identifier, int successor) {
-		sendKeyVals(successor);
+	public void sendKeysToSuccessor() {
+		sendKeyVals();
+		// TODO Auto-generated method stub
 		
 	}
 
-	private void sendKeyVals(int receiver /*some sort of key val pairs from the hash map,*/) {
+	private void sendKeyVals( /*some sort of key val pairs from the hash map,*/) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -493,5 +522,57 @@ public class Messenger {
 	{
 		return localMemberList.findEntry(identifier).getMachineIP();
 	}
+	
+	public void findSuccessor(int identifier) {
+		
+		int[] allIdentifiers = new int[localMemberList.getSize()];
+		int i=0;
+		for(; i< localMemberList.getSize()-1; i++)
+		{
+			allIdentifiers[i] = localMemberList.getFullList().get(i+1).getIdentifier();
+			
+		}
+		allIdentifiers[i] = identifier;
+		Arrays.sort(allIdentifiers);
+		int index = Arrays.binarySearch(allIdentifiers, identifier);
+		int successorIndex;
+		if(index == allIdentifiers.length-1)
+			successorIndex = 0;
+		else
+			successorIndex = index+1;
+		
+		localSuccessor = allIdentifiers[successorIndex];
+		System.out.println(localSuccessor);
+	}
+
+	public void getKeyValmessage() {
+		String clientSentence;
+		 String capitalizedSentence;
+		ServerSocket welcomeSocket;
+		try {
+			welcomeSocket = new ServerSocket(keyvalPort);
+		
+	        while(true)
+	        {
+	           Socket connectionSocket;
+			
+				connectionSocket = welcomeSocket.accept();
+			
+	           BufferedReader inFromClient =
+	              new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+	           DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+	           clientSentence = inFromClient.readLine();
+	           System.out.println("Received: " + clientSentence);
+	           capitalizedSentence = clientSentence.toUpperCase() + '\n';
+	           outToClient.writeBytes(capitalizedSentence);
+			}
+		}catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+     }
+		
+	
 }
 

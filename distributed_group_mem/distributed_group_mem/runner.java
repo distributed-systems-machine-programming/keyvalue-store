@@ -43,6 +43,7 @@ public class runner {
 		//INITIALIZE THE PARAMETERS
 		initParams();
 		int listenerPort= 9898;
+		int keyvalPort = 6789;
 		
 		//ASSIGN MACHINE IDs
 		String fullMachineID = getFullMachineID();
@@ -53,7 +54,8 @@ public class runner {
 		//GET M-BIT IDENTIFIER
 		
 		int identifier = getMbitIdentifier(m);
-		int successor = 0;
+		
+		
 		//LOGGER SETUP 
 		try {
 		      LogWriter.setup(shortMachineID, LoggingLevel);
@@ -65,7 +67,7 @@ public class runner {
 		
 		//CREATE MEMBERSHIP LIST
 		MemberList memberList = new MemberList(fullMachineID, identifier);
-		
+		MapStore map = new MapStore();
 		//INITIALIZE HEART
 		
 		Heart dil = new Heart(HeartRate, memberList, fullMachineID);
@@ -75,8 +77,9 @@ public class runner {
 		//INITIALIZE GOSSIP LISTENER
 		int lossRate = Integer.parseInt(args[1]);
 		
-		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate, m);
+		Gossiper gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate, m, identifier, map, keyvalPort);
 		gos_obj.gossip_listener();
+		gos_obj.keyval_listener();
 		if(args[0].equalsIgnoreCase("contact"))
 			gos_obj.gossip();
 		
@@ -96,8 +99,8 @@ public class runner {
 				{
 					gos_obj.joinRequest(temp[1]);
 					gos_obj.gossip();
-					successor = gos_obj.findSuccessor(identifier);
-					gos_obj.getKeysFromSuccessor(identifier, successor);
+					
+					
 					firstTimeJoin = false;
 				}
 				else
@@ -112,7 +115,7 @@ public class runner {
 					    }
 					memberList = new MemberList(fullMachineID, identifier);
 					dil = new Heart(HeartRate, memberList, fullMachineID);
-					gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate, m);
+					gos_obj = new Gossiper(listenerPort, GossipSendingRate, memberList, fullMachineID, FailureCleanUpRate, FailureTimeOut, lossRate, m, identifier, map, keyvalPort);
 					gos_obj.gossip_listener();
 					gos_obj.joinRequest(temp[1]);
 					gos_obj.gossip();
@@ -124,11 +127,11 @@ public class runner {
 			else if(temp[0].equals("leave"))
 			{
 				LOGGER.info(fullMachineID+" # "+" LEFT");
-				gos_obj.sendKeysToSuccessor(identifier, successor);
+				gos_obj.leaveRequest();
 				gos_obj.stopGossip();
 				gos_obj.stopGossipListener();
 				dil.stop();
-				gos_obj.leaveRequest();
+				
 				
 			}
 			else if(temp[0].equalsIgnoreCase("quit") | temp[0].equalsIgnoreCase("exit") )

@@ -1,6 +1,7 @@
 
 package distributed_group_mem;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -12,19 +13,25 @@ public class Gossiper extends Thread{
 	Messenger messenger = null;
 	MemberList localMemList = null;
 	int port;
+	int keyvalPort;
 	int GossipSendingRate;
 	String mID;
 	int m;
+	int identifier;
+	MapStore map;
 	final Logger LOGGER = Logger.getLogger(runner.class.getName());
 	
-	Gossiper(int port, int GossipSendingRate, MemberList localMemList, String mID, int failureCleanUpRate, int failureTimeOut, int lossRate, int m) throws Exception
+	Gossiper(int port, int GossipSendingRate, MemberList localMemList, String mID, int failureCleanUpRate, int failureTimeOut, int lossRate, int m, int identifier, MapStore map, int keyvalPort) throws Exception
 	{
 		this.port = port;
 		this.GossipSendingRate = GossipSendingRate;
 		this.localMemList = localMemList;
 		this.mID = mID;
-		messenger = new Messenger(port, localMemList,mID, failureCleanUpRate, failureTimeOut, lossRate);
+		messenger = new Messenger(port, localMemList,mID, failureCleanUpRate, failureTimeOut, lossRate, identifier, map, keyvalPort);
 		this.m = m;
+		this.identifier = identifier;
+		this.map = map;
+		this.keyvalPort = keyvalPort;
 	}
 	public void gossip_listener()
 	{
@@ -38,6 +45,15 @@ public class Gossiper extends Thread{
 		gossipThread.start();
 	}
 	
+	Thread keyvalListenerThread = new Thread()
+	{
+		public void run()
+		{
+			
+				messenger.getKeyValmessage();
+			
+		}
+	};
 	
 	Thread gossipThread = new Thread () {
 		  public void run () {
@@ -68,8 +84,10 @@ public class Gossiper extends Thread{
 		boolean success = messenger.sendJoinRequest(contactIP);
 		if(success)
 		{
+			
 			System.out.println("Joined the group successfully.");
 			LOGGER.info(mID+" # "+"JOINED THE GROUP");
+			messenger.getKeysFromSuccessor();
 		}
 		else
 		{
@@ -89,40 +107,17 @@ public class Gossiper extends Thread{
 		
 	}
 	public void leaveRequest() {
+		messenger.sendKeysToSuccessor();
 		messenger.sendLeaveRequest();
 		
 	}
-	public int findSuccessor(int identifier) {
-		int successor=0;
-		int[] allIdentifiers = new int[localMemList.getSize()+1];
-		int i=0;
-		for(; i< localMemList.getSize(); i++)
-		{
-			allIdentifiers[i] = localMemList.getFullList().get(i).getIdentifier();
-			
-		}
-		allIdentifiers[i] = identifier;
-		Arrays.sort(allIdentifiers);
-		int index = Arrays.binarySearch(allIdentifiers, identifier);
-		int successorIndex;
-		if(index == allIdentifiers.length-1)
-			successorIndex = 0;
-		else
-			successorIndex = index+1;
-		
-		successor = allIdentifiers[successorIndex];
-		return successor;
-		
-	}
-	public void getKeysFromSuccessor(int identifier, int successor) {
-		messenger.getKeysFromSuccessor(identifier, successor);
+	public void keyval_listener() {
+		keyvalListenerThread.start();
 		
 	}
 	
-	public void sendKeysToSuccessor(int identifier, int successor)
-	{
-		messenger.sendKeysToSuccessor(identifier, successor);
-	}
+		
+	
 		
 
 }

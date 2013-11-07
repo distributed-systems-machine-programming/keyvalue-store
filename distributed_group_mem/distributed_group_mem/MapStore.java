@@ -12,10 +12,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class MapStore {
-	TreeMap<Integer, Value> x = new TreeMap<Integer, Value>();
-	
+	TreeMap<Integer, Value> x = null;
 	MapStore(String xmlFile)	//this is for testing
 	{
+		x =new TreeMap<Integer, Value>();
 		try {
 			 
 			File fXmlFile = new File(xmlFile);
@@ -49,6 +49,15 @@ public class MapStore {
 		    }
 	}
 
+	
+
+	MapStore()
+	{
+		x =new TreeMap<Integer, Value>();
+		 
+	}
+	
+	
 	private void addToMapStore(String attribute, String id, String name) {
 		int attr = Integer.parseInt(attribute);
 		Value temp = new Value(Integer.parseInt(id), name);
