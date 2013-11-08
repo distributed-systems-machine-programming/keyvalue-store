@@ -2,6 +2,7 @@ package distributed_group_mem;
 
 import java.io.File;
 import java.util.*;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -12,10 +13,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class MapStore {
-	TreeMap<Integer, Value> x = null;
+	private TreeMap<Integer, Value> x = null;
 	MapStore(String xmlFile)	//this is for testing
 	{
-		x =new TreeMap<Integer, Value>();
+		x = new TreeMap<Integer, Value>();
 		try {
 			 
 			File fXmlFile = new File(xmlFile);
@@ -65,11 +66,37 @@ public class MapStore {
 		
 	}
 	
-	void addToMapStore(int key, Value val)
+	NavigableMap<Integer,Value> getKeys(int identifier)
+	{
+		return x.headMap(identifier, true);
+	}
+	
+	Map<Integer, Value> getKeys()
+	{
+		return x;
+	}
+	
+	void addEntry(int key, Value val)
 	{
 		//Aswin's code
 	}
 	
-	//	More of Aswin's code (update, lookup, delete)
+	void deleteEntry(int key)
+	{
+		//Aswin's code
+	}
+	
+	void updateEntry(int key, Value newValue)
+	{
+		//Aswin's code
+	}
+	
+	Entry<Integer, Value> lookupEntry(int key)
+	{
+		//Aswin's code
+		return null;
+	}
+	
+	
 	
 }

@@ -9,4 +9,8 @@ public class Value {
 		ID = id;
 		this.name = name;
 	}
+
+	public String getinline() {
+		return String.valueOf(ID) + " " + name;
+	}
 }

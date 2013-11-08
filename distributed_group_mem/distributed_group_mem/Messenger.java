@@ -4,6 +4,7 @@ package distributed_group_mem;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.*;
 import java.util.logging.Logger;
 
@@ -26,6 +27,7 @@ public class Messenger {
 	private byte[] sendData = new byte[BUFFER_SIZE]; 
     private byte[] receiveData = new byte[BUFFER_SIZE];
     private byte[] tempData = new byte[BUFFER_SIZE];
+    private byte[] tempData2 = new byte[BUFFER_SIZE];
     private int sendPort;
     private int listenerPort;
     private int keyvalPort;
@@ -460,64 +462,63 @@ public class Messenger {
 		}
 	}
 
-	public void getKeysFromSuccessor()  {
+	public byte[] addKeyValHeader(String messageType, byte[] sendMessage)
+	{
 		
-		 String sentence;
-		  String modifiedSentence;
-		  BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
-		  Socket clientSocket;
-		try {
-			clientSocket = new Socket(getIPfromIdentifier(localSuccessor), keyvalPort);
-		
-		  DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-		  BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		  sentence = "Testing keyval connection from " + String.valueOf(localIdentifier)+ " to " +String.valueOf(localSuccessor);
-		  outToServer.writeBytes(sentence + '\n');
-		  modifiedSentence = inFromServer.readLine();
-		  System.out.println("FROM SERVER: " + modifiedSentence);
-		  clientSocket.close();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		String cType;
+		byte[] bType = null;
+		if(messageType.equals("update"))
+		{
+			cType = "u";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+			
 		}
+		if(messageType.equals("lookup"))
+		{
+			cType = "l";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("add"))
+		{
+			cType = "a";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("delete"))
+		{
+			cType = "d";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("getKeyVal"))
+		{
+			cType = "g";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("sendKeyVal"))
+		{
+			cType = "s";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		byte[] c = new byte[bType.length + sendMessage.length];
+		System.arraycopy(bType, 0, c, 0, bType.length);
+		System.arraycopy(sendMessage, 0, c, bType.length, sendMessage.length);
 		
+		return c;
 	}
-
 	
-	private void sendRangeforKeys(int identifier, int successor) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 	public void sendKeysToSuccessor() {
-		sendKeyVals();
-		// TODO Auto-generated method stub
+		getAndSendKeyValsFromMap();
 		
 	}
 
-	private void sendKeyVals( /*some sort of key val pairs from the hash map,*/) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private void sendKeyVal(int key, Value value,int receiver) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private void addKeyValToStore(int key, Value value)
-	{
-		// TODO Auto-generated method stub
-	}
-	
-	private void removeKeyValsFromStore(int[] key)
-	{
-		// TODO Auto-generated method stub
-	}
-	
+
 	private String getIPfromIdentifier(int identifier)
 	{
 		return localMemberList.findEntry(identifier).getMachineIP();
@@ -542,12 +543,44 @@ public class Messenger {
 			successorIndex = index+1;
 		
 		localSuccessor = allIdentifiers[successorIndex];
-		System.out.println(localSuccessor);
+		//System.out.println(localSuccessor);
 	}
 
+	public void sendKeyValmessage(byte[] message, String receiverIP)  {
+		//change implementation of this
+		 //String sentence;
+		 // String modifiedSentence;
+		 
+		  Socket clientSocket;
+		try {
+			clientSocket = new Socket(receiverIP, keyvalPort);
+		
+		  DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+		  BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		  //sentence = "Testing keyval connection from " + String.valueOf(localIdentifier)+ " to " +String.valueOf(localSuccessor);
+		  int len = message.length;
+		  outToServer.writeInt(len);
+		    if (len > 0) {
+		    	outToServer.write(message, 0, len);
+		    }
+		  
+		  
+		  //modifiedSentence = inFromServer.readLine();
+		 // System.out.println("FROM SERVER: " + modifiedSentence);
+		  clientSocket.close();
+		} catch (UnknownHostException e) {
+			
+			e.printStackTrace();
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public void getKeyValmessage() {
-		String clientSentence;
-		 String capitalizedSentence;
+		//String clientSentence;
+		// String capitalizedSentence;
 		ServerSocket welcomeSocket;
 		try {
 			welcomeSocket = new ServerSocket(keyvalPort);
@@ -558,13 +591,60 @@ public class Messenger {
 			
 				connectionSocket = welcomeSocket.accept();
 			
-	           BufferedReader inFromClient =
-	              new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-	           DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-	           clientSentence = inFromClient.readLine();
-	           System.out.println("Received: " + clientSentence);
-	           capitalizedSentence = clientSentence.toUpperCase() + '\n';
-	           outToClient.writeBytes(capitalizedSentence);
+	           DataInputStream inFromClient = new DataInputStream(connectionSocket.getInputStream());
+	           int len = inFromClient.readInt();
+	           System.out.println( String.valueOf(len));
+	           byte[] temp_data = new byte[len];
+	           if (len > 0) {
+	               inFromClient.read(temp_data);
+	           }
+	           
+	           System.out.println(temp_data);
+	           byte[] type = new byte[1];
+			   byte[] data = new byte[len];
+			   System.arraycopy(temp_data, 0, type, 0, 1);
+			   System.arraycopy(temp_data, 1, data, 0, len-1);
+			      String sType = new String(type);
+			      System.out.println(sType);
+			      //outToClient.writeBytes(capitalizedSentence);
+			      if(sType.equals("g"))
+			      {
+			    	  int identifier = intParseKeyValByteMessage(data);
+			    	  System.out.println(String.valueOf(identifier));
+			    	  getAndSendKeyValsFromMap(identifier);
+			    	
+			      }
+			      else if(sType.equals("s"))
+			      {
+			    	 KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
+			    	 receiveKV.print();
+			    	 localMap.addEntry(receiveKV.identifier, receiveKV.val);
+			      }
+			      else if(sType.equals("a"))
+			      {
+			    	  KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
+			    	  receiveKV.print();
+			    	  localMap.addEntry(receiveKV.identifier, receiveKV.val);
+			      }
+		    	  else if(sType.equals("u"))
+			      {
+		    		  KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
+			    	  receiveKV.print();
+			    	  localMap.updateEntry(receiveKV.identifier, receiveKV.val);
+			      }
+			      else if(sType.equals("l"))
+			      {
+			    	  int receiveKeyIdentifier = intParseKeyValByteMessage(data);
+			    	  System.out.println(String.valueOf(receiveKeyIdentifier));
+			    	  localMap.lookupEntry(receiveKeyIdentifier);
+			      }
+			      else if(sType.equals("d"))
+			      {
+			    	  int receiveKeyIdentifier = intParseKeyValByteMessage(data);
+			    	  System.out.println(String.valueOf(receiveKeyIdentifier));
+			    	  localMap.lookupEntry(receiveKeyIdentifier);
+			      }
+			      
 			}
 		}catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -572,7 +652,111 @@ public class Messenger {
 		}
         
      }
+
+	private void getAndSendKeyValsFromMap(int identifier) {
+		NavigableMap<Integer, Value> temp = localMap.getKeys(identifier);
+		for(Integer key : temp.keySet()) {
+            Value value = temp.get(key);
+            System.out.printf("%s = %s%n", key, value);
+        }
+		for (Entry<Integer, Value> entry : temp.entrySet())
+		{
+			byte[] partMessage = generateKeyValByteMessage(new KeyValEntry (entry.getKey(), entry.getValue()));
+			byte[] fullMessage = addKeyValHeader("sendKeyVal", partMessage);
+			sendKeyValmessage(fullMessage, getIPfromIdentifier(identifier));
+		}
+	}
+
+private void getAndSendKeyValsFromMap() {
+		Map<Integer, Value> temp = localMap.getKeys();
+		for(Integer key : temp.keySet()) {
+            Value value = temp.get(key);
+            System.out.printf("%s = %s%n", key, value);
+        }
+		for (Entry<Integer, Value> entry : temp.entrySet())
+		{
+			byte[] partMessage = generateKeyValByteMessage(new KeyValEntry (entry.getKey(), entry.getValue()));
+			byte[] fullMessage = addKeyValHeader("sendKeyVal", partMessage);
+			sendKeyValmessage(fullMessage, getIPfromIdentifier(localSuccessor));
+		}
+	}
+	
+	
+	public void getKeysFromSuccessor() {
+		byte[] partMessage = generateKeyValByteMessage(localIdentifier);
+		byte[] fullMessage = addKeyValHeader("getKeyVal", partMessage);
+		sendKeyValmessage(fullMessage, getIPfromIdentifier(localSuccessor));
+	}
+
+	
+	public void sendKeyVals(int remoteidentifier)
+	{
+		byte[] partMessage = generateKeyValByteMessage(localIdentifier);
+		byte[] fullMessage = addKeyValHeader("sendKeyVal", partMessage);
+		sendKeyValmessage(fullMessage, getIPfromIdentifier(remoteidentifier));;
 		
+	}
+	
+	private byte[] generateKeyValByteMessage(int identifier) {
+		try {
+		ByteArrayOutputStream bao = new ByteArrayOutputStream(BUFFER_SIZE);
+  	    ObjectOutputStream oos = new ObjectOutputStream(bao);
+  	   
+		oos.writeObject(identifier);
+		tempData2 = bao.toByteArray();
+		} catch (IOException e) {
+		
+		e.printStackTrace();
+	}     	   
+        
+		return tempData2;
+	}
+	
+	private byte[] generateKeyValByteMessage(KeyValEntry kv ) {
+		try {
+			ByteArrayOutputStream bao = new ByteArrayOutputStream(BUFFER_SIZE);
+	  	    ObjectOutputStream oos = new ObjectOutputStream(bao);
+	  	   
+			oos.writeObject(kv);
+			tempData2 = bao.toByteArray();
+			} catch (IOException e) {
+			
+			e.printStackTrace();
+		}     	   
+	        
+			return tempData2;
+	}
+	private int intParseKeyValByteMessage(byte[] bytes) {
+		
+		int temp = 0;
+		try{
+        ByteArrayInputStream baos = new ByteArrayInputStream(bytes);
+        ObjectInputStream oos = new ObjectInputStream(baos);
+        temp = (Integer)oos.readObject();
+		}catch (IOException e) {
+            e.printStackTrace();	            
+	    } catch (ClassNotFoundException e) {
+			
+			e.printStackTrace();
+		}
+		return temp;
+	}		
+	
+private KeyValEntry kvParseKeyValByteMessage(byte[] bytes) {
+		
+		KeyValEntry temp = null;
+		try{
+        ByteArrayInputStream baos = new ByteArrayInputStream(bytes);
+        ObjectInputStream oos = new ObjectInputStream(baos);
+        temp = (KeyValEntry)oos.readObject();
+		}catch (IOException e) {
+            e.printStackTrace();	            
+	    } catch (ClassNotFoundException e) {
+			
+			e.printStackTrace();
+		}
+		return temp;
+	}
 	
 }
 
