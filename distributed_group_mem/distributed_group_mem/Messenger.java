@@ -44,8 +44,8 @@ public class Messenger {
     private int localIdentifier;
     private int localSuccessor;
     private MapStore localMap;
-    
-	Messenger (int port, MemberList localList, String machineID, int failureCleanUpRate, int failureTimeOut, int lossRate, int identifier, MapStore map, int keyvalPort) throws Exception
+    private int m;
+	Messenger (int port, MemberList localList, String machineID, int failureCleanUpRate, int failureTimeOut, int lossRate, int identifier, MapStore map, int keyvalPort, int m) throws Exception
 	{
 		localMemberList = localList;
 		listenerPort = port;
@@ -59,6 +59,7 @@ public class Messenger {
 			localIdentifier = identifier;
 			localMap = map;
 			this.keyvalPort = keyvalPort;
+			this.m = m;
 			
 		}
 		catch (SocketException e)
@@ -305,6 +306,18 @@ public class Messenger {
 			g=0;
 			updateMessageCount=0;
 		}
+		  
+	}
+	
+	public void sendLocalMemList(String IP) {
+		
+			
+		 
+			  ArrayList<String> listofSendMachineIPs = new ArrayList<String>();
+			  listofSendMachineIPs.add(IP);
+			  
+			  sendMessage(listofSendMachineIPs, "update");
+		  
 		  
 	}
 	
@@ -624,25 +637,25 @@ public class Messenger {
 			      {
 			    	  KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
 			    	  receiveKV.print();
-			    	  localMap.addEntry(receiveKV.identifier, receiveKV.val);
+			    	  //localMap.addEntry(receiveKV.identifier, receiveKV.val);
 			      }
 		    	  else if(sType.equals("u"))
 			      {
 		    		  KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
 			    	  receiveKV.print();
-			    	  localMap.updateEntry(receiveKV.identifier, receiveKV.val);
+			    	  //localMap.updateEntry(receiveKV.identifier, receiveKV.val);
 			      }
 			      else if(sType.equals("l"))
 			      {
 			    	  int receiveKeyIdentifier = intParseKeyValByteMessage(data);
 			    	  System.out.println(String.valueOf(receiveKeyIdentifier));
-			    	  localMap.lookupEntry(receiveKeyIdentifier);
+			    	  //localMap.lookupEntry(receiveKeyIdentifier);
 			      }
 			      else if(sType.equals("d"))
 			      {
 			    	  int receiveKeyIdentifier = intParseKeyValByteMessage(data);
 			    	  System.out.println(String.valueOf(receiveKeyIdentifier));
-			    	  localMap.deleteEntry(receiveKeyIdentifier);
+			    	  //localMap.deleteEntry(receiveKeyIdentifier);
 			      }
 			      
 			}
@@ -654,6 +667,34 @@ public class Messenger {
      }
 
 	private void getAndSendKeyValsFromMap(int identifier) {
+		Map<Integer, Value> temp = localMap.getKeys();
+		ArrayList<Integer> keys = new ArrayList<Integer>();
+		int newLocalIdentifier = getRelativeIdentifier(localIdentifier, identifier);
+		for (Entry<Integer, Value> entry : temp.entrySet())
+		{
+			
+			int newIdentifier = getRelativeIdentifier(entry.getKey(), identifier);
+			KeyValEntry x = new KeyValEntry (entry.getKey(), entry.getValue());
+			if(newIdentifier>newLocalIdentifier)
+			{	System.out.println("Identifier: " + String.valueOf(identifier));
+			System.out.println("Identifier's IP: " + String.valueOf(getIPfromIdentifier(identifier)));
+			System.out.println("MembershipList: " + localMemberList.Print());
+				x.print();
+				byte[] partMessage = generateKeyValByteMessage(x);
+				byte[] fullMessage = addKeyValHeader("sendKeyVal", partMessage);
+				sendKeyValmessage(fullMessage, getIPfromIdentifier(identifier));
+				keys.add(entry.getKey());
+			}
+			
+		
+		}
+		for(int i=0; i<keys.size();i++) {
+			localMap.deleteEntry(keys.get(i));
+		}
+		
+		
+		
+		
 		/*ArrayList<Integer> keys = new ArrayList<Integer>();
 		
 		NavigableMap<Integer, Value> temp = localMap.getKeys(identifier);
@@ -685,6 +726,17 @@ public class Messenger {
 		
 	}
 
+private int getRelativeIdentifier(int identifier, int reference) {
+		
+		int i1 = identifier-reference;
+		double size = Math.pow(2, m);
+		if(i1<=0)
+		{
+			return (int) (size+i1);
+		}
+		return i1;
+	}
+
 private void getAndSendKeyValsFromMap() {
 		Map<Integer, Value> temp = localMap.getKeys();
 		ArrayList<Integer> keys = new ArrayList<Integer>();
@@ -703,6 +755,7 @@ private void getAndSendKeyValsFromMap() {
 	
 	
 	public void getKeysFromSuccessor() {
+		sendLocalMemList(getIPfromIdentifier(localSuccessor));
 		byte[] partMessage = generateKeyValByteMessage(localIdentifier);
 		byte[] fullMessage = addKeyValHeader("getKeyVal", partMessage);
 		sendKeyValmessage(fullMessage, getIPfromIdentifier(localSuccessor));

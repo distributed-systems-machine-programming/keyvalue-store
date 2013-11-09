@@ -1,24 +1,64 @@
 <?xml version="1.0"?>
 <parameters>
-   <key id="489733">
+   <key id="48733">
       <ID>50</ID>
       <name>HP</name>
 	</key>
-   <key id="1211144">
+   <key id="121144">
       <ID>99</ID>
-      <name>RESS</name>
+      <name>Xerox</name>
 	</key>
    <key id="45">
       <ID>45</ID>
-      <name>Comapaq</name>
+      <name>Compaq</name>
 	</key>
-   <key id="898733">
+   <key id="8987">
       <ID>50</ID>
       <name>Apple</name>
 	</key>
    <key id="67646">
       <ID>22468</ID>
       <name>Google</name>
+	</key>
+	<key id="117482">
+      <ID>226</ID>
+      <name>LG</name>
+	</key>
+	<key id="95822">
+      <ID>22</ID>
+      <name>Samsung</name>
+     </key>
+     <key id="100000">
+      <ID>262</ID>
+      <name>HTC</name>
+      </key>
+      <key id="81000">
+      <ID>15</ID>
+      <name>Xolo</name>
+      </key>
+      <key id="77900">
+      <ID>1681</ID>
+      <name>Micromax</name>
+      </key>
+      <key id="54772">
+      <ID>7118</ID>
+      <name>Lenovo</name>
+      </key>
+      <key id="31711">
+      <ID>171142</ID>
+      <name>Asus</name>
+      </key>
+      <key id="27277">
+      <ID>217</ID>
+      <name>Lenovo</name>
+      </key>
+      <key id="11711">
+      <ID>010</ID>
+      <name>IBM</name>
+      </key>
+      <key id="51718">
+      <ID>111</ID>
+      <name>Sony</name>
 	</key>
 </parameters>
 	 

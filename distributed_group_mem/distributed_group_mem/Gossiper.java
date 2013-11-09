@@ -27,7 +27,7 @@ public class Gossiper extends Thread{
 		this.GossipSendingRate = GossipSendingRate;
 		this.localMemList = localMemList;
 		this.mID = mID;
-		messenger = new Messenger(port, localMemList,mID, failureCleanUpRate, failureTimeOut, lossRate, identifier, map, keyvalPort);
+		messenger = new Messenger(port, localMemList,mID, failureCleanUpRate, failureTimeOut, lossRate, identifier, map, keyvalPort, m);
 		this.m = m;
 		this.identifier = identifier;
 		this.map = map;
@@ -80,6 +80,11 @@ public class Gossiper extends Thread{
 		  }
 		};
 
+
+		private String getIPfromIdentifier(int identifier)
+		{
+			return localMemList.findEntry(identifier).getMachineIP();
+		}
 	public void joinRequest(String contactIP) {
 		boolean success = messenger.sendJoinRequest(contactIP);
 		if(success)
@@ -87,6 +92,13 @@ public class Gossiper extends Thread{
 			
 			System.out.println("Joined the group successfully.");
 			LOGGER.info(mID+" # "+"JOINED THE GROUP");
+			/*try {
+				//Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+		
 			messenger.getKeysFromSuccessor();
 		}
 		else
