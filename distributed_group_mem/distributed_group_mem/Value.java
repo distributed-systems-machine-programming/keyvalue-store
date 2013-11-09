@@ -1,6 +1,8 @@
 package distributed_group_mem;
 
-public class Value {
+import java.io.Serializable;
+
+public class Value implements Serializable {
 	int ID;
 	String name;
 	

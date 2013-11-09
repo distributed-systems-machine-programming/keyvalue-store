@@ -1,6 +1,8 @@
 package distributed_group_mem;
 
-public class KeyValEntry {
+import java.io.Serializable;
+
+public class KeyValEntry implements Serializable {
 	int identifier;
 	Value val;
 	

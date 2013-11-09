@@ -654,30 +654,50 @@ public class Messenger {
      }
 
 	private void getAndSendKeyValsFromMap(int identifier) {
+		/*ArrayList<Integer> keys = new ArrayList<Integer>();
+		
 		NavigableMap<Integer, Value> temp = localMap.getKeys(identifier);
 		for(Integer key : temp.keySet()) {
             Value value = temp.get(key);
             System.out.printf("%s = %s%n", key, value);
-        }
-		for (Entry<Integer, Value> entry : temp.entrySet())
-		{
-			byte[] partMessage = generateKeyValByteMessage(new KeyValEntry (entry.getKey(), entry.getValue()));
+            KeyValEntry x = new KeyValEntry (key, temp.get(key));
+			byte[] partMessage = generateKeyValByteMessage(x);
 			byte[] fullMessage = addKeyValHeader("sendKeyVal", partMessage);
+			x.print();
 			sendKeyValmessage(fullMessage, getIPfromIdentifier(identifier));
+			keys.add(key);
+        }
+		for(int i=0; i<keys.size();i++) {
+			localMap.deleteEntry(keys.get(i));
 		}
+		/*for (Entry<Integer, Value> entry : temp.entrySet())
+		{
+			KeyValEntry x = new KeyValEntry (entry.getKey(), entry.getValue());
+			byte[] partMessage = generateKeyValByteMessage(x);
+			byte[] fullMessage = addKeyValHeader("sendKeyVal", partMessage);
+			x.print();
+			//sendKeyValmessage(fullMessage, getIPfromIdentifier(identifier));
+			localMap.deleteEntry(entry.getKey());
+		}*/
+		
+		
+		
+		
 	}
 
 private void getAndSendKeyValsFromMap() {
 		Map<Integer, Value> temp = localMap.getKeys();
-		for(Integer key : temp.keySet()) {
-            Value value = temp.get(key);
-            System.out.printf("%s = %s%n", key, value);
-        }
+		ArrayList<Integer> keys = new ArrayList<Integer>();
+		
 		for (Entry<Integer, Value> entry : temp.entrySet())
 		{
 			byte[] partMessage = generateKeyValByteMessage(new KeyValEntry (entry.getKey(), entry.getValue()));
 			byte[] fullMessage = addKeyValHeader("sendKeyVal", partMessage);
 			sendKeyValmessage(fullMessage, getIPfromIdentifier(localSuccessor));
+			keys.add(entry.getKey());
+		}
+		for(int i=0; i<keys.size();i++) {
+			localMap.deleteEntry(keys.get(i));
 		}
 	}
 	
