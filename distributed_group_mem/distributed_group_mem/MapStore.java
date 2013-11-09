@@ -59,12 +59,55 @@ public class MapStore {
 	}
 	
 	
-	private void addToMapStore(String attribute, String id, String name) {
-		int attr = Integer.parseInt(attribute);
-		Value temp = new Value(Integer.parseInt(id), name);
-		x.put(attr, temp);
-		
-	}
+	   private void addToMapStore(String attribute, String id, String name) {
+           int attr = Integer.parseInt(attribute);
+           Value temp = new Value(Integer.parseInt(id), name);
+           x.put(attr, temp);
+           
+   }
+   // ADD, DELETE AND UPDATE return true if the respective actions worked, false otherwise.
+   public Boolean addEntry(int key, Value val)
+   {                
+           if(x.containsKey(key) == false) {
+                   x.put(key, val);
+                   return true;
+           }
+           else
+                   return false;
+   }
+   public Boolean deleteEntry(int key)
+   {
+           if(x.containsKey(key)){
+                   x.remove(key);
+                   return true;
+           }
+           else
+                   return false;
+   }
+   public Value lookupEntry(int key)
+   {
+           Value val = null;
+           if (x.containsKey(key))                
+                   val = x.get(key);
+           return val;        
+           
+   }
+   public Boolean updateEntry(int key, Value newval)
+   {
+           if(x.containsKey(key)) {
+                   x.put(key, newval);
+                   return true;
+           }
+           else 
+                   return false;
+           
+   }
+   public void printMapStore()
+   {
+           for (Entry<Integer, Value> entry : x.entrySet()) {
+                   System.out.println(entry.getKey() + "        " + entry.getValue().ID + " " + entry.getValue().name);
+           }                
+   }
 	
 	NavigableMap<Integer,Value> getKeys(int identifier)
 	{
@@ -74,27 +117,6 @@ public class MapStore {
 	Map<Integer, Value> getKeys()
 	{
 		return x;
-	}
-	
-	void addEntry(int key, Value val)
-	{
-		//Aswin's code
-	}
-	
-	void deleteEntry(int key)
-	{
-		//Aswin's code
-	}
-	
-	void updateEntry(int key, Value newValue)
-	{
-		//Aswin's code
-	}
-	
-	Entry<Integer, Value> lookupEntry(int key)
-	{
-		//Aswin's code
-		return null;
 	}
 	
 	

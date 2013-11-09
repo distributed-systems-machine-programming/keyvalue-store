@@ -642,7 +642,7 @@ public class Messenger {
 			      {
 			    	  int receiveKeyIdentifier = intParseKeyValByteMessage(data);
 			    	  System.out.println(String.valueOf(receiveKeyIdentifier));
-			    	  localMap.lookupEntry(receiveKeyIdentifier);
+			    	  localMap.deleteEntry(receiveKeyIdentifier);
 			      }
 			      
 			}
