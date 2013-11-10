@@ -89,6 +89,7 @@ public class MapStore {
            Value val = null;
            if (x.containsKey(key))                
                    val = x.get(key);
+           
            return val;        
            
    }
@@ -117,6 +118,13 @@ public class MapStore {
 	Map<Integer, Value> getKeys()
 	{
 		return x;
+	}
+
+
+
+	public void count() {
+		System.out.println("Count:" + x.size());
+		
 	}
 	
 	

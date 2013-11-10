@@ -44,7 +44,9 @@ public class Messenger {
     private int localIdentifier;
     private int localSuccessor;
     private MapStore localMap;
+    private String clientIP;
     private int m;
+    private int altKeyvalPort = 6767;
 	Messenger (int port, MemberList localList, String machineID, int failureCleanUpRate, int failureTimeOut, int lossRate, int identifier, MapStore map, int keyvalPort, int m) throws Exception
 	{
 		localMemberList = localList;
@@ -71,6 +73,10 @@ public class Messenger {
 
 //CONVERT THE RECEIVED BYTE STREAM TO THE MEMBERLIST OBJECT AND GET THE REMOTE MEMBERSHIP LIST
 	
+	public Messenger() {
+		// TODO Auto-generated constructor stub
+	}
+
 	private MemberList getMemberListFromBytes(byte[] bytes) {
 		
 		MemberList temp = null;
@@ -487,7 +493,7 @@ public class Messenger {
 			//System.out.println(String.valueOf(bType.length));
 			
 		}
-		if(messageType.equals("lookup"))
+		else if(messageType.equals("lookup"))
 		{
 			cType = "l";
 			bType = cType.getBytes();
@@ -514,6 +520,54 @@ public class Messenger {
 		else if(messageType.equals("sendKeyVal"))
 		{
 			cType = "s";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("rightAdd"))
+		{
+			cType = "b";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("rightUpdate"))
+		{
+			cType = "v";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("rightDelete"))
+		{
+			cType = "e";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("rightLookup"))
+		{
+			cType = "k";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("leftLookup"))
+		{
+			cType = "j";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("clientLookup"))
+		{
+			cType = "m";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("ack"))
+		{
+			cType = "c";
+			bType = cType.getBytes();
+			//System.out.println(String.valueOf(bType.length));
+		}
+		else if(messageType.equals("clientAck"))
+		{
+			cType = "n";
 			bType = cType.getBytes();
 			//System.out.println(String.valueOf(bType.length));
 		}
@@ -558,15 +612,39 @@ public class Messenger {
 		localSuccessor = allIdentifiers[successorIndex];
 		//System.out.println(localSuccessor);
 	}
+public int findRightNode(int identifier) {
+		
+		int[] allIdentifiers = new int[localMemberList.getSize()+1];
+		int i=0;
+		for(; i< localMemberList.getSize(); i++)
+		{
+			allIdentifiers[i] = localMemberList.getFullList().get(i).getIdentifier();
+			
+		}
+		allIdentifiers[i] = identifier;
+		Arrays.sort(allIdentifiers);
+		int index = Arrays.binarySearch(allIdentifiers, identifier);
+		int successorIndex;
+		if(index == allIdentifiers.length-1)
+			successorIndex = 0;
+		else
+			successorIndex = index+1;
+		
+		return allIdentifiers[successorIndex];
+		//System.out.println(localSuccessor);
+	}
 
 	public void sendKeyValmessage(byte[] message, String receiverIP)  {
+		sendKeyValmessage(message, receiverIP, keyvalPort);
+	}
+	public void sendKeyValmessage(byte[] message, String receiverIP, int port)  {
 		//change implementation of this
 		 //String sentence;
 		 // String modifiedSentence;
 		 
 		  Socket clientSocket;
 		try {
-			clientSocket = new Socket(receiverIP, keyvalPort);
+			clientSocket = new Socket(receiverIP, port);
 		
 		  DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		  BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -612,7 +690,7 @@ public class Messenger {
 	               inFromClient.read(temp_data);
 	           }
 	           
-	           System.out.println(temp_data);
+	           //System.out.println(temp_data);
 	           byte[] type = new byte[1];
 			   byte[] data = new byte[len];
 			   System.arraycopy(temp_data, 0, type, 0, 1);
@@ -637,25 +715,115 @@ public class Messenger {
 			      {
 			    	  KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
 			    	  receiveKV.print();
+			    	  int rightNode = findRightNode(receiveKV.identifier);
+			    	  sendAddKeyValMessage(receiveKV, rightNode);
 			    	  //localMap.addEntry(receiveKV.identifier, receiveKV.val);
 			      }
 		    	  else if(sType.equals("u"))
 			      {
 		    		  KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
 			    	  receiveKV.print();
-			    	  //localMap.updateEntry(receiveKV.identifier, receiveKV.val);
+			    	  int rightNode = findRightNode(receiveKV.identifier);
+			    	  sendUpdateKeyValMessage(receiveKV, rightNode);
+			    	  
 			      }
 			      else if(sType.equals("l"))
 			      {
 			    	  int receiveKeyIdentifier = intParseKeyValByteMessage(data);
 			    	  System.out.println(String.valueOf(receiveKeyIdentifier));
-			    	  //localMap.lookupEntry(receiveKeyIdentifier);
+			    	  int rightNode = findRightNode(receiveKeyIdentifier);
+			    	  sendLookupKeyValMessage(receiveKeyIdentifier, rightNode);
 			      }
+			      
 			      else if(sType.equals("d"))
 			      {
 			    	  int receiveKeyIdentifier = intParseKeyValByteMessage(data);
 			    	  System.out.println(String.valueOf(receiveKeyIdentifier));
-			    	  //localMap.deleteEntry(receiveKeyIdentifier);
+			    	  int rightNode = findRightNode(receiveKeyIdentifier);
+			    	  sendDeleteKeyValMessage(receiveKeyIdentifier, rightNode);
+			      }
+			      else if(sType.equals("b"))
+			      {
+			    	  String serverContactIP = connectionSocket.getInetAddress().toString();
+			    	  serverContactIP = serverContactIP.substring(1);
+			    	  System.out.println("serverContactIP: " + serverContactIP);
+			    	  KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
+			    	  receiveKV.print();
+			    	  localMap.addEntry(receiveKV.identifier, receiveKV.val);
+			    	  byte[] partMessage = generateKeyValByteMessage(9999);
+			  		  byte[] fullMessage = addKeyValHeader("ack", partMessage);
+			  		 sendKeyValmessage(fullMessage, serverContactIP);
+			    	  
+			      }
+			      else if(sType.equals("v"))
+			      {
+			    	  String serverContactIP = connectionSocket.getInetAddress().toString();
+			    	  serverContactIP = serverContactIP.substring(1);
+			    	  System.out.println("serverContactIP: " + serverContactIP);
+			    	  KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
+			    	  receiveKV.print();
+			    	  localMap.updateEntry(receiveKV.identifier, receiveKV.val);
+			    	  byte[] partMessage = generateKeyValByteMessage(9999);
+			  		  byte[] fullMessage = addKeyValHeader("ack", partMessage);
+			  		 sendKeyValmessage(fullMessage, serverContactIP);
+			    	  
+			      }
+			      else if(sType.equals("k"))
+			      {
+			    	  String serverContactIP = connectionSocket.getInetAddress().toString();
+			    	  serverContactIP = serverContactIP.substring(1);
+			    	  System.out.println("serverContactIP: " + serverContactIP);
+			    	  int receiveKeyIdentifier = intParseKeyValByteMessage(data);
+			    	  System.out.println(String.valueOf(receiveKeyIdentifier));
+			    	  Value retVal = localMap.lookupEntry(receiveKeyIdentifier);
+			    	  KeyValEntry sendKV;
+			    	  if (retVal == null)
+			    	  {
+			    	   sendKV = new KeyValEntry(-1, new Value(141, "waste value"));
+			    	  }
+			    	  else
+			    	  {
+			    	   sendKV = new KeyValEntry(receiveKeyIdentifier, retVal);
+			    	  }
+			    	  byte[] partMessage = generateKeyValByteMessage(sendKV);
+			  		  byte[] fullMessage = addKeyValHeader("leftLookup", partMessage);
+			  		  sendKeyValmessage(fullMessage, serverContactIP);
+			    	  
+			    	  
+			      }
+			      else if(sType.equals("e"))
+			      {
+			    	  String serverContactIP = connectionSocket.getInetAddress().toString();
+			    	  serverContactIP = serverContactIP.substring(1);
+			    	  System.out.println("serverContactIP: " + serverContactIP);
+			    	  int receiveKeyIdentifier = intParseKeyValByteMessage(data);
+			    	  System.out.println(String.valueOf(receiveKeyIdentifier));
+			    	  localMap.deleteEntry(receiveKeyIdentifier);
+			    	  byte[] partMessage = generateKeyValByteMessage(9999);
+			  		  byte[] fullMessage = addKeyValHeader("ack", partMessage);
+			  		 sendKeyValmessage(fullMessage, serverContactIP);
+			      }
+			      else if(sType.equals("h"))
+			      {
+			    	  clientIP = connectionSocket.getInetAddress().toString();
+			    	  clientIP = clientIP.substring(1);
+			    	  System.out.println("ClientIP: " + clientIP);
+			      }
+			      else if(sType.equals("j"))
+			      {
+			    	  KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
+			    	  receiveKV.print();
+			    	  byte[] partMessage = generateKeyValByteMessage(receiveKV);
+			  		  byte[] fullMessage = addKeyValHeader("clientLookup", partMessage);
+			  		  sendKeyValmessage(fullMessage, clientIP, altKeyvalPort);
+			      }
+			      else if(sType.equals("c"))
+			      {
+			    	  //KeyValEntry receiveKV = kvParseKeyValByteMessage(data);
+			    	  //receiveKV.print();
+			    	  //byte[] partMessage = generateKeyValByteMessage(receiveKV);
+			  		  byte[] fullMessage = addKeyValHeader("clientAck", data);
+			  		  sendKeyValmessage(fullMessage, clientIP, altKeyvalPort);
 			      }
 			      
 			}
@@ -665,6 +833,34 @@ public class Messenger {
 		}
         
      }
+
+	private void sendUpdateKeyValMessage(KeyValEntry receiveKV, int rightNode) {
+		byte[] partMessage = generateKeyValByteMessage(receiveKV);
+		byte[] fullMessage = addKeyValHeader("rightUpdate", partMessage);
+		sendKeyValmessage(fullMessage, getIPfromIdentifier(rightNode));
+		
+	}
+
+	private void sendDeleteKeyValMessage(int receiveKeyIdentifier, int rightNode) {
+		byte[] partMessage = generateKeyValByteMessage(receiveKeyIdentifier);
+		byte[] fullMessage = addKeyValHeader("rightDelete", partMessage);
+		sendKeyValmessage(fullMessage, getIPfromIdentifier(rightNode));
+		
+	}
+
+	private void sendLookupKeyValMessage(int receiveKeyIdentifier, int rightNode) {
+		byte[] partMessage = generateKeyValByteMessage(receiveKeyIdentifier);
+		byte[] fullMessage = addKeyValHeader("rightLookup", partMessage);
+		sendKeyValmessage(fullMessage, getIPfromIdentifier(rightNode));
+		
+	}
+
+	private void sendAddKeyValMessage(KeyValEntry receiveKV, int rightNode) {
+		byte[] partMessage = generateKeyValByteMessage(receiveKV);
+		byte[] fullMessage = addKeyValHeader("rightAdd", partMessage);
+		sendKeyValmessage(fullMessage, getIPfromIdentifier(rightNode));
+		
+	}
 
 	private void getAndSendKeyValsFromMap(int identifier) {
 		Map<Integer, Value> temp = localMap.getKeys();
@@ -766,11 +962,11 @@ private void getAndSendKeyValsFromMap() {
 	{
 		byte[] partMessage = generateKeyValByteMessage(localIdentifier);
 		byte[] fullMessage = addKeyValHeader("sendKeyVal", partMessage);
-		sendKeyValmessage(fullMessage, getIPfromIdentifier(remoteidentifier));;
+		sendKeyValmessage(fullMessage, getIPfromIdentifier(remoteidentifier));
 		
 	}
 	
-	private byte[] generateKeyValByteMessage(int identifier) {
+	 byte[] generateKeyValByteMessage(int identifier) {
 		try {
 		ByteArrayOutputStream bao = new ByteArrayOutputStream(BUFFER_SIZE);
   	    ObjectOutputStream oos = new ObjectOutputStream(bao);
@@ -785,7 +981,7 @@ private void getAndSendKeyValsFromMap() {
 		return tempData2;
 	}
 	
-	private byte[] generateKeyValByteMessage(KeyValEntry kv ) {
+	byte[] generateKeyValByteMessage(KeyValEntry kv ) {
 		try {
 			ByteArrayOutputStream bao = new ByteArrayOutputStream(BUFFER_SIZE);
 	  	    ObjectOutputStream oos = new ObjectOutputStream(bao);

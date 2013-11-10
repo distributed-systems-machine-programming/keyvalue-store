@@ -70,7 +70,8 @@ public class runner {
 		MapStore map = null;
 		if(args[0].equalsIgnoreCase("contact"))
 		{
-			 map = new MapStore("sampleKeyValStore.xml");
+			 //map = new MapStore("sampleKeyValStore.xml");
+			map = new MapStore();
 		}
 		else
 		{
@@ -98,7 +99,7 @@ public class runner {
 		LOGGER.info(fullMachineID+" # "+"INITIALIZED");
 		while(true)
 		{
-			System.out.println("\nUSAGE: join [contactIP] | leave | add | update | delete | lookup | print");
+			System.out.println("\nUSAGE: join [contactIP] | leave | show | count");
 			System.out.print(">");
 			
 			input = br.readLine();
@@ -149,10 +150,16 @@ public class runner {
 				System.exit(0);
 				
 			}
-			else if(temp[0].equalsIgnoreCase("print") )
+			else if(temp[0].equalsIgnoreCase("show") )
 			{
 				LOGGER.info(fullMachineID+" # "+" Print All Keys");
 				map.printMapStore();
+				
+				
+			}
+			else if(temp[0].equalsIgnoreCase("count") )
+			{
+				map.count();
 				
 				
 			}
