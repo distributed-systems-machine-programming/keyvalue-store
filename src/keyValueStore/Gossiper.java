@@ -1,5 +1,5 @@
 
-package distributed_group_mem;
+package keyValueStore;
 
 import java.io.IOException;
 import java.util.*;

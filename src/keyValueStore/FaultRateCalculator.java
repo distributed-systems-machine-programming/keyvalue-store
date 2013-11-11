@@ -1,4 +1,4 @@
-package distributed_group_mem;
+package keyValueStore;
 
 
 //SIMPLE CLASS USED TO GET FAULT RATE
